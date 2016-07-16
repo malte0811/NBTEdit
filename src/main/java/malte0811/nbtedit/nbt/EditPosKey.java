@@ -3,7 +3,7 @@ package malte0811.nbtedit.nbt;
 import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 public class EditPosKey {

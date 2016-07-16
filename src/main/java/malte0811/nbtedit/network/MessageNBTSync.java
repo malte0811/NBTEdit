@@ -22,13 +22,18 @@ public class MessageNBTSync implements IMessage {
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		pos = EditPosKey.fromBytes(buf);
-		value = ByteBufUtils.readTag(buf);
+		if (buf.readBoolean()) {
+			value = ByteBufUtils.readTag(buf);
+		}
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf) {
 		pos.toBytes(buf);
-		ByteBufUtils.writeTag(buf, value);
+		buf.writeBoolean(value!=null);
+		if (value!=null) {
+			ByteBufUtils.writeTag(buf, value);
+		}
 	}
 
 	public static class ClientHandler implements IMessageHandler<MessageNBTSync, IMessage>

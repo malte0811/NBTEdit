@@ -33,7 +33,7 @@ public class MessageRequestNBT implements IMessage {
 		@Override
 		public IMessage onMessage(MessageRequestNBT msg, MessageContext ctx)
 		{
-			if (NBTEdit.editNbt.canCommandSenderUseCommand(ctx.getServerHandler().playerEntity)) {
+			if (NBTEdit.editNbt.checkPermission(ctx.getServerHandler().playerEntity.mcServer, ctx.getServerHandler().playerEntity)) {
 				NBTTagCompound val = NBTEdit.commonProxyInstance.getNBT(msg.pos, false);
 				return new MessageNBTSync(msg.pos, val);
 			}

@@ -1,17 +1,19 @@
 package malte0811.nbtedit.nbt;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.network.MessagePushNBT;
 import malte0811.nbtedit.network.MessageRequestNBT;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
 
 public class ClientProxy extends CommonProxy {
 	private Map<EditPosKey, NBTTagCompound> cache = new HashMap<>();
+	private Set<EditPosKey> unread = new HashSet<>();
 	@Override
 	public NBTTagCompound getNBT(EditPosKey k, boolean sync) {
 		if (sync) {
@@ -20,10 +22,11 @@ public class ClientProxy extends CommonProxy {
 			NBTEdit.packetHandler.sendToServer(new MessageRequestNBT(k));
 			try {
 				synchronized (this) {
-					while (!cache.containsKey(k)) {
+					while (!unread.contains(k)) {
 						wait();
 					}
 				}
+				unread.remove(k);
 				return cache.get(k);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -44,6 +47,7 @@ public class ClientProxy extends CommonProxy {
 		} else {
 			cache.remove(pos);
 		}
+		unread.add(pos);
 	}
 	
 }

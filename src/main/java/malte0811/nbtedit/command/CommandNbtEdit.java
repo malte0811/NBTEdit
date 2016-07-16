@@ -10,9 +10,10 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.RayTraceResult.Type;
 
 public class CommandNbtEdit extends CommandBase {
 
@@ -26,27 +27,27 @@ public class CommandNbtEdit extends CommandBase {
 		return "/nbtedit [<x> <y> <z> [<dim>]]";
 	}
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+	public void execute(MinecraftServer s, ICommandSender sender, String[] args) throws CommandException {
 		EntityPlayer player = getCommandSenderAsPlayer(sender);
 		EditPosKey pos = null;
-		MovingObjectPosition mop = Utils.rayTrace(player);
+		RayTraceResult mop = Utils.rayTrace(player);
 		if (args.length==3||args.length==4) {
 			int x = parseInt(args[0]);
 			int y = parseInt(args[1]);
 			int z = parseInt(args[2]);
-			int w = player.worldObj.provider.getDimensionId();
+			int w = player.worldObj.provider.getDimension();
 			if (args.length==4) {
 				w = parseInt(args[3]);
 			}
 			pos = new EditPosKey(player.getUniqueID(), w, new BlockPos(x, y, z));
-		} else if (mop!=null&&mop.typeOfHit==MovingObjectType.BLOCK) {
+		} else if (mop!=null&&mop.typeOfHit==Type.BLOCK) {
 			BlockPos bPos = mop.getBlockPos();
 			if (player.worldObj.getTileEntity(bPos)==null)
 				throw new CommandException("No TileEntity found");
-			pos = new EditPosKey(player.getUniqueID(), player.worldObj.provider.getDimensionId(), bPos);
-		} else if (mop!=null&&mop.typeOfHit==MovingObjectType.ENTITY) {
+			pos = new EditPosKey(player.getUniqueID(), player.worldObj.provider.getDimension(), bPos);
+		} else if (mop!=null&&mop.typeOfHit==Type.ENTITY) {
 			Entity e = mop.entityHit;
-			pos = new EditPosKey(player.getUniqueID(), e.worldObj.provider.getDimensionId(), e.getEntityId());
+			pos = new EditPosKey(player.getUniqueID(), e.worldObj.provider.getDimension(), e.getEntityId());
 		} else {
 			throw new CommandException("No object found for editing");
 		}

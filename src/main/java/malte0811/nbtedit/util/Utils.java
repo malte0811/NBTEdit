@@ -5,25 +5,26 @@ import java.util.List;
 import com.google.common.base.Predicates;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EntitySelectors;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.RayTraceResult.Type;
+import net.minecraft.util.math.Vec3d;
+
 
 public final class Utils {
-	public static MovingObjectPosition rayTrace(Entity entity) {
+	public static RayTraceResult rayTrace(Entity entity) {
 		double d0 = 10;
-		Vec3 eyePos = entity.getPositionVector().addVector(0, entity.getEyeHeight(), 0);
-        Vec3 vec31 = entity.getLook(1);
-        Vec3 vec32 = eyePos.addVector(vec31.xCoord * d0, vec31.yCoord * d0, vec31.zCoord * d0);
-        MovingObjectPosition block = entity.worldObj.rayTraceBlocks(eyePos, vec32, false, false, true);
-		double d1 = block.typeOfHit == MovingObjectType.BLOCK ? block.hitVec.distanceTo(eyePos)
+		Vec3d eyePos = entity.getPositionVector().addVector(0, entity.getEyeHeight(), 0);
+        Vec3d Vec3d1 = entity.getLook(1);
+        Vec3d Vec3d2 = eyePos.addVector(Vec3d1.xCoord * d0, Vec3d1.yCoord * d0, Vec3d1.zCoord * d0);
+        RayTraceResult block = entity.worldObj.rayTraceBlocks(eyePos, Vec3d2, false, false, true);
+		double d1 = block.typeOfHit == Type.BLOCK ? block.hitVec.distanceTo(eyePos)
 				: Double.MAX_VALUE;
-		Vec3 lookVec = entity.getLook(1);
-		Vec3 maxRay = eyePos.addVector(lookVec.xCoord * d0, lookVec.yCoord * d0, lookVec.zCoord * d0);
+		Vec3d lookVec = entity.getLook(1);
+		Vec3d maxRay = eyePos.addVector(lookVec.xCoord * d0, lookVec.yCoord * d0, lookVec.zCoord * d0);
 		Entity pointedEntity = null;
-		Vec3 vec33 = null;
+		Vec3d Vec3d3 = null;
 		float f = 1.0F;
 		List<Entity> list = entity.worldObj.getEntitiesInAABBexcluding(entity,
 				entity.getEntityBoundingBox().addCoord(lookVec.xCoord * d0, lookVec.yCoord * d0, lookVec.zCoord * d0)
@@ -35,36 +36,36 @@ public final class Utils {
 			Entity entity1 = (Entity) list.get(j);
 			float f1 = entity1.getCollisionBorderSize();
 			AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().expand((double) f1, (double) f1, (double) f1);
-			MovingObjectPosition movingobjectposition = axisalignedbb.calculateIntercept(eyePos, maxRay);
+			RayTraceResult RayTraceResult = axisalignedbb.calculateIntercept(eyePos, maxRay);
 
 			if (axisalignedbb.isVecInside(eyePos)) {
 				if (d2 >= 0.0D) {
 					pointedEntity = entity1;
-					vec33 = movingobjectposition == null ? eyePos : movingobjectposition.hitVec;
+					Vec3d3 = RayTraceResult == null ? eyePos : RayTraceResult.hitVec;
 					d2 = 0.0D;
 				}
-			} else if (movingobjectposition != null) {
-				double d3 = eyePos.distanceTo(movingobjectposition.hitVec);
+			} else if (RayTraceResult != null) {
+				double d3 = eyePos.distanceTo(RayTraceResult.hitVec);
 
 				if (d3 < d2 || d2 == 0.0D) {
-					if (entity1 == entity.ridingEntity && !entity.canRiderInteract()) {
+					if (entity1 == entity.getRidingEntity() && !entity.canRiderInteract()) {
 						if (d2 == 0.0D) {
 							pointedEntity = entity1;
-							vec33 = movingobjectposition.hitVec;
+							Vec3d3 = RayTraceResult.hitVec;
 						}
 					} else {
 						pointedEntity = entity1;
-						vec33 = movingobjectposition.hitVec;
+						Vec3d3 = RayTraceResult.hitVec;
 						d2 = d3;
 					}
 				}
 			}
 		}
 
-		if (pointedEntity == null || eyePos.distanceTo(vec33) > d1) {
+		if (pointedEntity == null || eyePos.distanceTo(Vec3d3) > d1) {
 			return block;
 		}
 		
-		return new MovingObjectPosition(pointedEntity);
+		return new RayTraceResult(pointedEntity);
 	}
 }

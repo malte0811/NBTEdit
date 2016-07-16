@@ -39,7 +39,7 @@ public class MessagePushNBT implements IMessage {
 		@Override
 		public IMessage onMessage(MessagePushNBT msg, MessageContext ctx)
 		{
-			if (NBTEdit.editNbt.canCommandSenderUseCommand(ctx.getServerHandler().playerEntity)) {
+			if (NBTEdit.editNbt.checkPermission(ctx.getServerHandler().playerEntity.mcServer, ctx.getServerHandler().playerEntity)) {
 				NBTEdit.commonProxyInstance.setNBT(msg.pos, msg.value);
 				return null;
 			}

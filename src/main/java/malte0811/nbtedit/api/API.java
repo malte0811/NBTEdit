@@ -27,7 +27,7 @@ public class API {
 		}
 	}
 	public static IEditHandler getEntityHandler(String e) {
-		Class<?> c = EntityList.stringToClassMapping.get(e);
+		Class<?> c = EntityList.NAME_TO_CLASS.get(e);
 		while (c!=null&&c!=Entity.class&&c!=Object.class) {
 			if (entityHandlers.containsKey(c)) {
 				return entityHandlers.get(c);

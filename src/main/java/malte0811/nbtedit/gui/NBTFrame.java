@@ -74,11 +74,14 @@ public class NBTFrame extends JFrame {
 		setVisible(true);
 	}
 	public void pullNbt() {
-		NBTEdit.proxy.cache(editPos, null);
 		nbtRoot = NBTEdit.proxy.getNBT(editPos, true);
 		updateNbt();
 	}
 	public void updateNbt() {
+		if (nbtRoot==null) {
+			JOptionPane.showMessageDialog(this, "The object being edited was removed.");
+			return;
+		}
 		DefaultMutableTreeNode node = genTreeFromNbt(nbtRoot);
 		panel.removeAll();
 		JTree old = tree;

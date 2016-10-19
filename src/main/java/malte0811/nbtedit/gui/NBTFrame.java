@@ -324,6 +324,19 @@ public class NBTFrame extends JFrame {
 		String sel = (String) JOptionPane.showInputDialog(this, "Select which tag to delete: ", "", JOptionPane.INFORMATION_MESSAGE, null, keys, keys[0]);
 		NBTClipboard.deleteEntry(sel);
 	}
+	
+	private void writeTag(NBTTagCompound nbt) {
+		String name = JOptionPane.showInputDialog(this, "Name of the file: ");
+		if (!name.endsWith(".nbt")) {
+			name = name+".nbt";
+		}
+		File out = new File(Minecraft.getMinecraft().mcDataDir, name);
+		try {
+			NBTUtils.writeNBT(nbt, new FileOutputStream(out));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private class NBTKeyListener extends KeyAdapter{
 
@@ -387,6 +400,8 @@ public class NBTFrame extends JFrame {
 		if (nbt instanceof NBTTagCompound) {
 			m = ret.add("Paste tag");
 			m.addActionListener((a)->{paste(tp);});
+			m = ret.add("Write tag to file");
+			m.addActionListener((a)->{writeTag((NBTTagCompound)nbt);});
 			ret.addSeparator();
 			for (int i = 1;i<NBTBase.NBT_TYPES.length;i++) {
 				addAddOption(ret, i, nbt);

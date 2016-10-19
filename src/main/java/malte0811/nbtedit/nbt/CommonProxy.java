@@ -1,8 +1,10 @@
 package malte0811.nbtedit.nbt;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
 public class CommonProxy {
@@ -29,7 +31,14 @@ public class CommonProxy {
 		} else if (k.tPos!=null) {
 			TileEntity te = DimensionManager.getWorld(k.dim).getTileEntity(k.tPos);
 			if (te!=null) {
+				World w = te.getWorld();
+				IBlockState state = w.getBlockState(k.tPos);
 				te.readFromNBT(newNbt);
+				te.markDirty();
+				IBlockState newState = w.getBlockState(k.tPos);
+				w.notifyBlockUpdate(k.tPos,state,state,3);
+				w.notifyNeighborsOfStateChange(k.tPos, newState.getBlock());
+				w.markBlockRangeForRenderUpdate(k.tPos, k.tPos);
 			}
 		}
 	}

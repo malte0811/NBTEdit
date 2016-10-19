@@ -29,7 +29,7 @@ group= "malte0811" // http://maven.apache.org/guides/mini/guide-naming-conventio
 archivesBaseName = "NBTEdit"
 
 minecraft {
-    version = "1.9.4-12.17.0.1976"
+    version = "1.10.2-12.18.2.2107"
     runDir = "run"
     replace '${version}', project.version
     

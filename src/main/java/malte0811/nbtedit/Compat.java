@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.Loader;
 
 public class Compat {
 	public static void registerHandlers() {
-		if (Loader.isModLoaded("ImmersiveEngineering")) {
+		if (Loader.isModLoaded("immersiveengineering")) {
     		API.registerTileHandler(TileEntityMultiblockPart.class, (nbt, menu, frame)->{
     			int[] offset = nbt.getIntArray("offset");
     			if (offset!=null&&offset.length==3&&(offset[0]!=0||offset[1]!=0||offset[2]!=0)) {

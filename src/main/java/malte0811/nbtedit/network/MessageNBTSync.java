@@ -12,9 +12,11 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class MessageNBTSync implements IMessage {
 	EditPosKey pos;
 	NBTTagCompound value;
-	public MessageNBTSync(EditPosKey k, NBTTagCompound val) {
+	boolean forCache = true;
+	public MessageNBTSync(EditPosKey k, NBTTagCompound val, boolean cache) {
 		pos = k;
 		value = val;
+		forCache = cache;
 	}
 
 	public MessageNBTSync() {}
@@ -24,6 +26,7 @@ public class MessageNBTSync implements IMessage {
 		pos = EditPosKey.fromBytes(buf);
 		if (buf.readBoolean()) {
 			value = ByteBufUtils.readTag(buf);
+			forCache = buf.readBoolean();
 		}
 	}
 
@@ -33,17 +36,20 @@ public class MessageNBTSync implements IMessage {
 		buf.writeBoolean(value!=null);
 		if (value!=null) {
 			ByteBufUtils.writeTag(buf, value);
+			buf.writeBoolean(forCache);
 		}
 	}
 
-	public static class ClientHandler implements IMessageHandler<MessageNBTSync, IMessage>
-	{
+	public static class ClientHandler implements IMessageHandler<MessageNBTSync, IMessage> {
 		@Override
-		public IMessage onMessage(MessageNBTSync msg, MessageContext ctx)
-		{
-			synchronized (NBTEdit.proxy) {
-				NBTEdit.proxy.cache(msg.pos, msg.value);
-				NBTEdit.proxy.notifyAll();
+		public IMessage onMessage(MessageNBTSync msg, MessageContext ctx) {
+			if (msg.forCache) {
+				synchronized (NBTEdit.proxy) {
+					NBTEdit.proxy.cache(msg.pos, msg.value);
+					NBTEdit.proxy.notifyAll();
+				}
+			} else {
+				NBTEdit.proxy.syncNBT(msg.pos, msg.value);
 			}
 			return null;
 		}

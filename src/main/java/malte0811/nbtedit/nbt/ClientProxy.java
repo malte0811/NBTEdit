@@ -10,6 +10,8 @@ import malte0811.nbtedit.network.MessagePushNBT;
 import malte0811.nbtedit.network.MessageRequestNBT;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 
 public class ClientProxy extends CommonProxy {
 	private Map<EditPosKey, NBTTagCompound> cache = new HashMap<>();
@@ -49,5 +51,13 @@ public class ClientProxy extends CommonProxy {
 		}
 		unread.add(pos);
 	}
-	
+	@Override
+	public void syncNBT(EditPosKey pos, NBTTagCompound nbt) {
+		World w = Minecraft.getMinecraft().theWorld;
+		TileEntity te = w.getTileEntity(pos.tPos);
+		if (te!=null) {
+			te.readFromNBT(nbt);
+			w.markBlockRangeForRenderUpdate(pos.tPos, pos.tPos);
+		}
+	}
 }

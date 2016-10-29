@@ -1,5 +1,8 @@
 package malte0811.nbtedit.nbt;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.network.MessageNBTSync;
 import net.minecraft.block.state.IBlockState;
@@ -49,4 +52,7 @@ public class CommonProxy {
 		throw new IllegalStateException("Can't be called on the server!");
 	}
 	public void syncNBT(EditPosKey pos, NBTTagCompound nbt) {}
+	public Set<AutoPullConfig> getAutoPulls() {
+		return new HashSet<>();
+	}
 }

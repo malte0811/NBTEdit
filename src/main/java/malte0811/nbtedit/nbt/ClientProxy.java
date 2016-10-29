@@ -1,9 +1,10 @@
 package malte0811.nbtedit.nbt;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.network.MessagePushNBT;
@@ -14,7 +15,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 public class ClientProxy extends CommonProxy {
-	private Map<EditPosKey, NBTTagCompound> cache = new HashMap<>();
+	private Set<AutoPullConfig> autoPulls = Collections.newSetFromMap(new ConcurrentHashMap<>());
+	private Map<EditPosKey, NBTTagCompound> cache = new ConcurrentHashMap<>();
 	private Set<EditPosKey> unread = new HashSet<>();
 	@Override
 	public NBTTagCompound getNBT(EditPosKey k, boolean sync) {
@@ -59,5 +61,9 @@ public class ClientProxy extends CommonProxy {
 			te.readFromNBT(nbt);
 			w.markBlockRangeForRenderUpdate(pos.tPos, pos.tPos);
 		}
+	}
+	@Override
+	public Set<AutoPullConfig> getAutoPulls() {
+		return autoPulls;
 	}
 }

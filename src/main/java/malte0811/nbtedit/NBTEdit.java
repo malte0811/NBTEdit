@@ -1,5 +1,6 @@
 package malte0811.nbtedit;
 
+import malte0811.nbtedit.client.ClientEventHandler;
 import malte0811.nbtedit.client.NBTClipboard;
 import malte0811.nbtedit.command.CommandNbtEdit;
 import malte0811.nbtedit.nbt.CommonProxy;
@@ -7,8 +8,8 @@ import malte0811.nbtedit.network.MessageNBTSync;
 import malte0811.nbtedit.network.MessageOpenWindow;
 import malte0811.nbtedit.network.MessagePushNBT;
 import malte0811.nbtedit.network.MessageRequestNBT;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -27,7 +28,7 @@ public class NBTEdit
 	public static CommonProxy commonProxyInstance = new CommonProxy();
 	public static CommandNbtEdit editNbt;
 
-    @EventHandler
+    @Mod.EventHandler
     public void init(FMLInitializationEvent event)
     {
     	int id = 0;
@@ -39,8 +40,9 @@ public class NBTEdit
     		NBTClipboard.readFromDisc();
     		Compat.registerHandlers();
     	}
+    	MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
     }
-    @EventHandler
+    @Mod.EventHandler
     public void serverStart(FMLServerStartingEvent ev)
     {
     	editNbt = new CommandNbtEdit();

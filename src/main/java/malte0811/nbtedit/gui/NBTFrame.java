@@ -38,6 +38,9 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.api.API;
 import malte0811.nbtedit.api.IEditHandler;
@@ -88,7 +91,8 @@ public class NBTFrame extends JFrame {
 		updateNbt();
 	}
 	private void initGUI() {
-		tree = new JTree(new DefaultMutableTreeNode("nbtroot"));
+		tree = new JTree(new DefaultMutableTreeNode(new ImmutablePair<>("nbtroot", new NBTTagCompound())));
+		tree.setCellRenderer(new NBTTreeCellRenderer());
 
 		GroupLayout gl = new GroupLayout(panel);
 		ParallelGroup hor = gl.createParallelGroup();
@@ -133,7 +137,15 @@ public class NBTFrame extends JFrame {
 	}
 	public void updateNbt() {
 		if (nbtRoot==null) {
-			JOptionPane.showMessageDialog(this, "The object being edited was removed.");
+			new Thread(()->{
+				Set<AutoPullConfig> configs = NBTEdit.proxy.getAutoPulls();
+				AutoPullConfig tmp = new AutoPullConfig(this, 0);
+				if (configs.contains(tmp)) {
+					configs.remove(tmp);
+					autoPull.setText("Enable auto pulling");
+				}
+				JOptionPane.showMessageDialog(this, "The object being edited was removed.");
+			}).start();
 			return;
 		}
 		DefaultMutableTreeNode node = genTreeFromNbt(nbtRoot);
@@ -166,26 +178,33 @@ public class NBTFrame extends JFrame {
 		buildMap((TreeNode) dest.getModel().getRoot(), null, destMap);
 		while (expanded.hasMoreElements()) {
 			TreePath curr = expanded.nextElement();
-			TreePath dstVersion = destMap.get(curr.toString());
+			TreePath dstVersion = destMap.get(stringFromPath(curr));
 			if (dstVersion!=null) {
 				dest.expandPath(dstVersion);
 			}
 		}
 		if (selected!=null) {
-			dest.setSelectionPath(destMap.get(selected.toString()));
+			dest.setSelectionPath(destMap.get(stringFromPath(selected)));
 		}
 	}
 	private void buildMap(TreeNode node, TreePath base, Map<String, TreePath> l) {
 		base = base!=null?base.pathByAddingChild(node):new TreePath(node);
-		l.put(base.toString(), base);
+		l.put(stringFromPath(base), base);
 		if (node.getAllowsChildren()) {
 			for (int i = 0;i<node.getChildCount();i++) {
 				buildMap(node.getChildAt(i), base, l);
 			}
 		}
 	}
+	private String stringFromPath(TreePath t) {
+		String ret = "";
+		for (int i = 0;i<t.getPathCount();i++) {
+			ret+=stringFromObject(t.getPathComponent(i))+";";
+		}
+		return ret;
+	}
 	public DefaultMutableTreeNode genTreeFromNbt(NBTTagCompound nbt) {
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode("nbtroot");
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode(new ImmutablePair<>("nbtroot", nbt));
 		for (String k:nbt.getKeySet()) {
 			NBTBase b = nbt.getTag(k);
 			root.add(getNodeForBase(b, k));
@@ -197,17 +216,17 @@ public class NBTFrame extends JFrame {
 		switch (type) {
 		case "COMPOUND":
 			MutableTreeNode sub = genTreeFromNbt((NBTTagCompound)nbt);
-			sub.setUserObject(key+":NBTTagCompound");
+			sub.setUserObject(new ImmutablePair<>(key, nbt));
 			return sub;
 		case "LIST":
-			DefaultMutableTreeNode list = new DefaultMutableTreeNode(key+":NBTTagList");
+			DefaultMutableTreeNode list = new DefaultMutableTreeNode(new ImmutablePair<>(key, nbt));
 			NBTTagList l = (NBTTagList) nbt;
 			for (int i = 0;i<l.tagCount();i++) {
 				list.add(getNodeForBase(l.get(i), Integer.toString(i)));
 			}
 			return list;
 		default:
-			return new DefaultMutableTreeNode(key+":"+nbt);
+			return new DefaultMutableTreeNode(new ImmutablePair<>(key, nbt));
 		}
 	}
 	//
@@ -241,13 +260,11 @@ public class NBTFrame extends JFrame {
 		NBTBase above = null;
 		String key = null;
 		for (int i = 1;i<t.getPathCount();i++) {
-			String path = t.getPathComponent(i).toString();
+			key = stringFromObject(t.getPathComponent(i));
 			if (curr instanceof NBTTagCompound) {
-				key = path.substring(0, path.indexOf(':'));
 				above = curr;
 				curr = ((NBTTagCompound) curr).getTag(key);
 			} else if (curr instanceof NBTTagList) {
-				key = path.substring(0, path.indexOf(':'));
 				above = curr;
 				curr = ((NBTTagList) curr).get(Integer.parseInt(key));
 			}
@@ -270,12 +287,10 @@ public class NBTFrame extends JFrame {
 		NBTBase curr = nbtRoot;
 		String key = null;
 		for (int i = 1;i<t.getPathCount();i++) {
-			String path = t.getPathComponent(i).toString();
+			key = stringFromObject(t.getPathComponent(i));
 			if (curr instanceof NBTTagCompound) {
-				key = path.substring(0, path.indexOf(':'));
 				curr = ((NBTTagCompound) curr).getTag(key);
 			} else if (curr instanceof NBTTagList) {
-				key = path.substring(0, path.indexOf(':'));
 				curr = ((NBTTagList) curr).get(Integer.parseInt(key));
 			}
 		}
@@ -286,13 +301,11 @@ public class NBTFrame extends JFrame {
 		NBTBase above = null;
 		String key = null;
 		for (int i = 1;i<t.getPathCount();i++) {
-			String path = t.getPathComponent(i).toString();
+			key = stringFromObject(t.getPathComponent(i));
 			if (curr instanceof NBTTagCompound) {
-				key = path.substring(0, path.indexOf(':'));
 				above = curr;
 				curr = ((NBTTagCompound) curr).getTag(key);
 			} else if (curr instanceof NBTTagList) {
-				key = path.substring(0, path.indexOf(':'));
 				above = curr;
 				curr = ((NBTTagList) curr).get(Integer.parseInt(key));
 			}
@@ -634,7 +647,15 @@ public class NBTFrame extends JFrame {
 			});
 		}
 	}
-
+	private String stringFromObject(Object o) {
+		if (o instanceof DefaultMutableTreeNode) {
+			o = ((DefaultMutableTreeNode) o).getUserObject();
+		}
+		if (o instanceof Pair<?, ?>) {
+			o = ((Pair<?, ?>) o).getLeft();
+		}
+		return o.toString();
+	}
 	private class PushListener implements ActionListener {
 
 		@Override
@@ -663,7 +684,7 @@ public class NBTFrame extends JFrame {
 	}
 	private class CloseListener extends WindowAdapter {
 		@Override
-		public void windowClosed(WindowEvent e) {
+		public void windowClosing(WindowEvent e) {
 			AutoPullConfig toRemove = new AutoPullConfig(NBTFrame.this, 0);
 			NBTEdit.proxy.getAutoPulls().remove(toRemove);
 		}

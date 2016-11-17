@@ -26,8 +26,8 @@ public class ClientProxy extends CommonProxy {
 			NBTEdit.packetHandler.sendToServer(new MessageRequestNBT(k));
 			try {
 				synchronized (this) {
-					while (!unread.contains(k)) {
-						wait();
+					while (!unread.contains(k)&&Minecraft.getMinecraft().theWorld!=null) {
+						wait(1000);
 					}
 				}
 				unread.remove(k);

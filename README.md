@@ -12,6 +12,7 @@ No mod author expects people to modify the NBT-data of his (Tile-)entities or it
 - View&edit NBT-data of Entities and TileEntities without leaving the world
 - NBT-data is shown in external windows
 - It is possible to view multiple NBT-tags at once
+- Auto-Pulling: NBT data in a window can be set to update every `n` ticks
 - NBT-Clipboard
   - Store tags for future use
   - Unlimited amount of named clipboards

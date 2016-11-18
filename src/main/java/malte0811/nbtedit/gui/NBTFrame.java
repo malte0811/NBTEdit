@@ -1,5 +1,6 @@
 package malte0811.nbtedit.gui;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -154,7 +155,7 @@ public class NBTFrame extends JFrame {
 		TreePath selected = tree.getSelectionPath();
 		model.setRoot(node);
 		if (expanded!=null)
-			updateExpansionAndSelection(expanded, selected, tree);
+			updateExpansionAndSelection(expanded, selected, tree, scroll);
 
 		IEditHandler h = API.get(nbtRoot);
 		if (h!=null) {
@@ -173,7 +174,7 @@ public class NBTFrame extends JFrame {
 		}
 		this.repaint();
 	}
-	private void updateExpansionAndSelection(Enumeration<TreePath> expanded, TreePath selected, JTree dest) {
+	private void updateExpansionAndSelection(Enumeration<TreePath> expanded, TreePath selected, JTree dest, JScrollPane scroll) {
 		Map<String, TreePath> destMap = new HashMap<>();
 		buildMap((TreeNode) dest.getModel().getRoot(), null, destMap);
 		while (expanded.hasMoreElements()) {
@@ -185,6 +186,11 @@ public class NBTFrame extends JFrame {
 		}
 		if (selected!=null) {
 			dest.setSelectionPath(destMap.get(stringFromPath(selected)));
+			dest.makeVisible(dest.getSelectionPath());
+			if (dest.getSelectionPath()!=null&&dest.getPathBounds(dest.getSelectionPath())!=null) {
+				scroll.getViewport().setViewPosition(new Point(0, 0));
+				scroll.getViewport().scrollRectToVisible(dest.getPathBounds(dest.getSelectionPath()));
+			}
 		}
 	}
 	private void buildMap(TreeNode node, TreePath base, Map<String, TreePath> l) {

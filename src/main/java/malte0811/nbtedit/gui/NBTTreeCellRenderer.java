@@ -23,7 +23,7 @@ public class NBTTreeCellRenderer extends DefaultTreeCellRenderer {
 	static {
 		for (int i = 1;i<nbtIcons.length;i++) {
 			try {
-				IResource r = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(NBTEdit.MODID, "icons/"+NBTBase.NBT_TYPES[i].replace("[]", "array")+".png"));
+				IResource r = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(NBTEdit.MODID, "icons/"+NBTBase.NBT_TYPES[i].replace("[]", "_array")+".png"));
 				byte[] imageData = org.apache.commons.io.IOUtils.toByteArray(r.getInputStream());
 				nbtIcons[i] = new ImageIcon(imageData);
 			} catch (Exception x) {

@@ -1,6 +1,7 @@
 package malte0811.nbtedit.gui;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -32,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -89,7 +91,7 @@ public class NBTFrame extends JFrame {
 	}
 	public void pullNbt() {
 		nbtRoot = NBTEdit.proxy.getNBT(editPos, true);
-		updateNbt();
+		SwingUtilities.invokeLater(this::updateNbt);
 	}
 	private void initGUI() {
 		tree = new JTree(new DefaultMutableTreeNode(new ImmutablePair<>("nbtroot", new NBTTagCompound())));
@@ -188,8 +190,11 @@ public class NBTFrame extends JFrame {
 			dest.setSelectionPath(destMap.get(stringFromPath(selected)));
 			dest.makeVisible(dest.getSelectionPath());
 			if (dest.getSelectionPath()!=null&&dest.getPathBounds(dest.getSelectionPath())!=null) {
-				scroll.getViewport().setViewPosition(new Point(0, 0));
-				scroll.getViewport().scrollRectToVisible(dest.getPathBounds(dest.getSelectionPath()));
+				Rectangle rect = dest.getPathBounds(dest.getSelectionPath());
+				if (!scroll.getViewport().getViewRect().contains(rect)) {
+					scroll.getViewport().setViewPosition(new Point(0, 0));
+					scroll.getViewport().scrollRectToVisible(rect);
+				}
 			}
 		}
 	}
@@ -246,16 +251,18 @@ public class NBTFrame extends JFrame {
 			autoPull.setText("Enable auto pulling");
 		} else {
 			String in = JOptionPane.showInputDialog(this, "Ticks to wait between automatic pulls:", "10");
-			try {
-				int delay = Integer.parseInt(in);
-				if (delay<=0)
-					throw new IllegalArgumentException("Delay must be greater than zero");
-				AutoPullConfig real = new AutoPullConfig(this, delay);
-				configs.add(real);
-				autoPull.setText("Disable auto pulling");
-			} catch (Exception x) {
-				JOptionPane.showMessageDialog(this, "Failed to set up auto pulling. Check the log for details.");
-				x.printStackTrace();
+			if (in!=null) {
+				try {
+					int delay = Integer.parseInt(in);
+					if (delay<=0)
+						throw new IllegalArgumentException("Delay must be greater than zero");
+					AutoPullConfig real = new AutoPullConfig(this, delay);
+					configs.add(real);
+					autoPull.setText("Disable auto pulling");
+				} catch (Exception x) {
+					JOptionPane.showMessageDialog(this, "Failed to set up auto pulling. Check the log for details.");
+					x.printStackTrace();
+				}
 			}
 		}
 	}

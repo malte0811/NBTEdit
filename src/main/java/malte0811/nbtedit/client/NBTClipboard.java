@@ -18,7 +18,7 @@ import net.minecraft.nbt.NBTTagCompound;
 public class NBTClipboard {
 	private static Map<String, NBTBase> copied = new ConcurrentHashMap<>();
 	public static void saveToClipboard(NBTBase val, String name) {
-		copied.put(name, val);
+		copied.put(name, val.copy());
 		saveToDisc();
 	}
 	public static void deleteEntry(String keyToDelete) {

@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.swing.JOptionPane;
+
 import com.google.common.collect.ImmutableMap;
 
 import malte0811.nbtedit.nbt.NBTUtils;
@@ -51,8 +53,22 @@ public class NBTClipboard {
 				for (String k:nbt.getKeySet()) {
 					copied.put(k, nbt.getTag(k));
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
+				int option = JOptionPane.showOptionDialog(null, "Couldn't read the NBT clipboard file. Do you want to delete it?", "NBT Clipboard Loading Error",
+						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, JOptionPane.UNINITIALIZED_VALUE);
+				if (option==JOptionPane.YES_OPTION) {
+					boolean deleted = false;
+					try {
+						deleted = in.delete();
+					} catch (Exception x) {
+						deleted = false;
+						x.printStackTrace();
+					}
+					if (!deleted) {
+						JOptionPane.showMessageDialog(null, "Could not delete NBT clipboard", "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
 			}
 		}
 	}

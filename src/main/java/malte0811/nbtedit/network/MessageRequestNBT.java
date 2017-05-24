@@ -33,11 +33,11 @@ public class MessageRequestNBT implements IMessage {
 		@Override
 		public IMessage onMessage(MessageRequestNBT msg, MessageContext ctx)
 		{
-			if (NBTEdit.editNbt.checkPermission(ctx.getServerHandler().playerEntity.mcServer, ctx.getServerHandler().playerEntity)) {
+			if (NBTEdit.editNbt.checkPermission(ctx.getServerHandler().player.mcServer, ctx.getServerHandler().player)) {
 				NBTTagCompound val = NBTEdit.commonProxyInstance.getNBT(msg.pos, false);
 				return new MessageNBTSync(msg.pos, val, true);
 			}
-			FMLLog.log(NBTEdit.MODID, Level.ERROR, "Player "+ctx.getServerHandler().playerEntity.getDisplayNameString()+" tried to request NBT data from the server but isn't permitted to do so!");
+			FMLLog.log(NBTEdit.MODID, Level.ERROR, "Player "+ctx.getServerHandler().player.getDisplayNameString()+" tried to request NBT data from the server but isn't permitted to do so!");
 			return null;
 		}
 	}

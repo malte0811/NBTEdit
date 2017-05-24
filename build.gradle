@@ -21,7 +21,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.11-13.19.0.2153"
+    version = "13.20.0.2282"
     runDir = "run"
     replace '${version}', project.version
     
@@ -30,7 +30,7 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not allways work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20161111"
+    mappings = "snapshot_20170323"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
@@ -82,4 +82,15 @@ processResources
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+repositories {
+    maven {
+        name 'jared maven'
+        url 'http://blamejared.com/maven'
+    }
+}
+
+dependencies {
+    deobfCompile "blusunrize:ImmersiveEngineering:0.10-+:deobf"
 }

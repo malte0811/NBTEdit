@@ -26,7 +26,7 @@ public class ClientProxy extends CommonProxy {
 			NBTEdit.packetHandler.sendToServer(new MessageRequestNBT(k));
 			try {
 				synchronized (this) {
-					while (!unread.contains(k)&&Minecraft.getMinecraft().theWorld!=null) {
+					while (!unread.contains(k)&&Minecraft.getMinecraft().world!=null) {
 						wait(1000);
 					}
 				}
@@ -55,7 +55,7 @@ public class ClientProxy extends CommonProxy {
 	}
 	@Override
 	public void syncNBT(EditPosKey pos, NBTTagCompound nbt) {
-		World w = Minecraft.getMinecraft().theWorld;
+		World w = Minecraft.getMinecraft().world;
 		TileEntity te = w.getTileEntity(pos.tPos);
 		if (te!=null) {
 			te.readFromNBT(nbt);

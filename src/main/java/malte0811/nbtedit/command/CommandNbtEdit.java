@@ -19,12 +19,12 @@ import net.minecraft.util.math.RayTraceResult.Type;
 public class CommandNbtEdit extends CommandBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "nbtedit";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "/nbtedit [<x> <y> <z> [<dim>]]";
 	}
 	@Override
@@ -49,17 +49,17 @@ public class CommandNbtEdit extends CommandBase {
 			pos = new EditPosKey(player.getUniqueID(), h);
 		} else if (args.length==3||args.length==4) {
 			BlockPos p = parseBlockPos(s, args, 0, false);
-			int w = player.worldObj.provider.getDimension();
+			int w = player.world.provider.getDimension();
 			if (args.length==4) {
 				w = parseInt(args[3]);
 			}
 			pos = keyFromPos(p, player, w);
 		} else if (mop!=null&&mop.typeOfHit==Type.BLOCK) {
 			BlockPos bPos = mop.getBlockPos();
-			pos = keyFromPos(bPos, player, player.worldObj.provider.getDimension());
+			pos = keyFromPos(bPos, player, player.world.provider.getDimension());
 		} else if (mop!=null&&mop.typeOfHit==Type.ENTITY) {
 			Entity e = mop.entityHit;
-			pos = new EditPosKey(player.getUniqueID(), e.worldObj.provider.getDimension(), e.getEntityId());
+			pos = new EditPosKey(player.getUniqueID(), e.world.provider.getDimension(), e.getEntityId());
 		} else {
 			throw new CommandException("No object found for editing");
 		}
@@ -68,7 +68,7 @@ public class CommandNbtEdit extends CommandBase {
 		}
 	}
 	private EditPosKey keyFromPos(BlockPos p, EntityPlayer player, int dimension) throws CommandException {
-		if (player.worldObj.getTileEntity(p)==null)
+		if (player.world.getTileEntity(p)==null)
 			throw new CommandException("No TileEntity found at {"+p.getX()+", "+p.getY()+", "+p.getZ()+"}");
 		return new EditPosKey(player.getUniqueID(), dimension, p);
 	}

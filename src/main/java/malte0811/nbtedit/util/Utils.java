@@ -18,7 +18,7 @@ public final class Utils {
 		Vec3d eyePos = entity.getPositionVector().addVector(0, entity.getEyeHeight(), 0);
         Vec3d Vec3d1 = entity.getLook(1);
         Vec3d Vec3d2 = eyePos.addVector(Vec3d1.xCoord * d0, Vec3d1.yCoord * d0, Vec3d1.zCoord * d0);
-        RayTraceResult block = entity.worldObj.rayTraceBlocks(eyePos, Vec3d2, false, false, true);
+        RayTraceResult block = entity.world.rayTraceBlocks(eyePos, Vec3d2, false, false, true);
 		double d1 = block.typeOfHit == Type.BLOCK ? block.hitVec.distanceTo(eyePos)
 				: Double.MAX_VALUE;
 		Vec3d lookVec = entity.getLook(1);
@@ -26,7 +26,7 @@ public final class Utils {
 		Entity pointedEntity = null;
 		Vec3d Vec3d3 = null;
 		float f = 1.0F;
-		List<Entity> list = entity.worldObj.getEntitiesInAABBexcluding(entity,
+		List<Entity> list = entity.world.getEntitiesInAABBexcluding(entity,
 				entity.getEntityBoundingBox().addCoord(lookVec.xCoord * d0, lookVec.yCoord * d0, lookVec.zCoord * d0)
 						.expand((double) f, (double) f, (double) f),
 				Predicates.and(EntitySelectors.NOT_SPECTATING, (e)->(e.canBeCollidedWith())));

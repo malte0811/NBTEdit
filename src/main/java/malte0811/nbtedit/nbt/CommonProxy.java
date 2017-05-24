@@ -33,10 +33,9 @@ public class CommonProxy {
 			break;
 		case HAND:
 			EntityPlayerMP player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(k.player);
-			if (player!=null) {
-				ItemStack stack = player.getHeldItem(k.hand);
-				return stack.serializeNBT();
-			}
+			ItemStack stack = player.getHeldItem(k.hand);
+			if (!stack.isEmpty())
+				return stack.serializeNBT().copy();
 		}
 		return null;
 	}
@@ -64,10 +63,8 @@ public class CommonProxy {
 			break;
 		case HAND:
 			EntityPlayerMP player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(k.player);
-			if (player!=null) {
-				ItemStack stack = new ItemStack(newNbt);
-				player.setHeldItem(k.hand, stack);
-			}
+			ItemStack stack = new ItemStack(newNbt);
+			player.setHeldItem(k.hand, stack);
 		}
 	}
 	public void cache(EditPosKey pos, NBTTagCompound nbt) {

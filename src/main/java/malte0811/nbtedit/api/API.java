@@ -35,7 +35,7 @@ public class API {
 	//TODO find a way to do this without reflection
 	static {
 		try {
-			String name = ObfuscationReflectionHelper.remapFieldNames(TileEntity.class.getName(), new String[]{"field_190562_f"})[0];
+			String name = ObfuscationReflectionHelper.remapFieldNames(TileEntity.class.getName(), "field_190562_f")[0];
 			Field teRegistry = TileEntity.class.getDeclaredField(name);
 			teRegistry.setAccessible(true);
 			registry = (RegistryNamespaced<ResourceLocation, Class<? extends TileEntity>>) teRegistry.get(null);

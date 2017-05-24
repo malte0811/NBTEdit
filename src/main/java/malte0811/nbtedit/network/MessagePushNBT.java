@@ -39,11 +39,11 @@ public class MessagePushNBT implements IMessage {
 		@Override
 		public IMessage onMessage(MessagePushNBT msg, MessageContext ctx)
 		{
-			if (NBTEdit.editNbt.checkPermission(ctx.getServerHandler().playerEntity.mcServer, ctx.getServerHandler().playerEntity)) {
+			if (NBTEdit.editNbt.checkPermission(ctx.getServerHandler().player.mcServer, ctx.getServerHandler().player)) {
 				NBTEdit.commonProxyInstance.setNBT(msg.pos, msg.value);
 				return null;
 			}
-			FMLLog.log(NBTEdit.MODID, Level.ERROR, "Player "+ctx.getServerHandler().playerEntity.getDisplayNameString()+" tried to push NBT data to the server but isn't permitted to do so!");
+			FMLLog.log(NBTEdit.MODID, Level.ERROR, "Player "+ctx.getServerHandler().player.getDisplayNameString()+" tried to push NBT data to the server but isn't permitted to do so!");
 			return null;
 		}
 	}

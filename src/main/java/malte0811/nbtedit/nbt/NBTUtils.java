@@ -2,9 +2,11 @@ package malte0811.nbtedit.nbt;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import malte0811.nbtedit.NBTEdit;
 import net.minecraft.nbt.*;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
+import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,37 +70,42 @@ public class NBTUtils {
 		if (in == null)
 			return curr;
 		NBTBase ret = null;
-		switch (NBTBase.NBT_TYPES[curr.getId()]) {//"BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"
-			case "COMPOUND":
-			case "LIST":
-				break;
-			case "BYTE":
-				ret = new NBTTagByte(Byte.parseByte(in));
-				break;
-			case "SHORT":
-				ret = new NBTTagShort(Short.parseShort(in));
-				break;
-			case "INT":
-				ret = new NBTTagInt(Integer.parseInt(in));
-				break;
-			case "LONG":
-				ret = new NBTTagLong(Long.parseLong(in));
-				break;
-			case "FLOAT":
-				ret = new NBTTagFloat(Float.parseFloat(in));
-				break;
-			case "DOUBLE":
-				ret = new NBTTagDouble(Double.parseDouble(in));
-				break;
-			case "BYTE[]":
-				ret = new NBTTagByteArray(stringToByteArray(in));
-				break;
-			case "STRING":
-				ret = new NBTTagString(in);
-				break;
-			case "INT[]":
-				ret = new NBTTagIntArray(stringToIntArray(in));
-				break;
+		try {
+			switch (NBTBase.NBT_TYPES[curr.getId()]) {//"BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"
+				case "COMPOUND":
+				case "LIST":
+					break;
+				case "BYTE":
+					ret = new NBTTagByte(Byte.parseByte(in));
+					break;
+				case "SHORT":
+					ret = new NBTTagShort(Short.parseShort(in));
+					break;
+				case "INT":
+					ret = new NBTTagInt(Integer.parseInt(in));
+					break;
+				case "LONG":
+					ret = new NBTTagLong(Long.parseLong(in));
+					break;
+				case "FLOAT":
+					ret = new NBTTagFloat(Float.parseFloat(in));
+					break;
+				case "DOUBLE":
+					ret = new NBTTagDouble(Double.parseDouble(in));
+					break;
+				case "BYTE[]":
+					ret = new NBTTagByteArray(stringToByteArray(in));
+					break;
+				case "STRING":
+					ret = new NBTTagString(in);
+					break;
+				case "INT[]":
+					ret = new NBTTagIntArray(stringToIntArray(in));
+					break;
+			}
+		} catch (Exception x) {
+			ret = null;
+			NBTEdit.logger.catching(Level.WARN, x);
 		}
 		return ret;
 	}

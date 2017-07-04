@@ -22,7 +22,9 @@ public class CommonProxy {
 			case ENTITY:
 				Entity e = DimensionManager.getWorld(k.dim).getEntityByID(k.ePos);
 				if (e != null) {
-					return e.serializeNBT();
+					NBTTagCompound ret = new NBTTagCompound();
+					e.writeToNBT(ret);
+					return ret;
 				}
 				break;
 			case TILEENTITY:
@@ -44,7 +46,7 @@ public class CommonProxy {
 		switch (k.type) {
 			case ENTITY:
 				Entity e = DimensionManager.getWorld(k.dim).getEntityByID(k.ePos);
-				if (e != null) {
+				if (e!=null) {
 					e.readFromNBT(newNbt);
 				}
 				break;

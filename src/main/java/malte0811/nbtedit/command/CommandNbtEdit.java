@@ -25,7 +25,7 @@ public class CommandNbtEdit extends CommandBase {
 
 	@Override
 	public String getUsage(ICommandSender sender) {
-		return "/nbtedit [<x> <y> <z> [<dim>]]";
+		return "/nbtedit [<x> <y> <z> [<dim>]] or [hand [<off/main>]] or [self (experimental)]";
 	}
 
 	@Override
@@ -48,6 +48,8 @@ public class CommandNbtEdit extends CommandBase {
 				}
 			}
 			pos = new EditPosKey(player.getUniqueID(), h);
+		} else if (args.length==1&&args[0].equalsIgnoreCase("self")) {
+			pos = new EditPosKey(player.getUniqueID(), player.world.provider.getDimension(), player.getEntityId());
 		} else if (args.length == 3 || args.length == 4) {
 			BlockPos p = parseBlockPos(s, args, 0, false);
 			int w = player.world.provider.getDimension();

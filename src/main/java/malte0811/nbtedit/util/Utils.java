@@ -26,15 +26,15 @@ public final class Utils {
 		Vec3d Vec3d3 = null;
 		float f = 1.0F;
 		List<Entity> list = entity.world.getEntitiesInAABBexcluding(entity,
-				entity.getEntityBoundingBox().offset(lookVec.x * d0, lookVec.y * d0, lookVec.z * d0)
-						.expand((double) f, (double) f, (double) f),
+				entity.getEntityBoundingBox().expand(lookVec.x * d0, lookVec.y * d0, lookVec.z * d0)
+						.grow((double) f),
 				Predicates.and(EntitySelectors.NOT_SPECTATING, (e) -> (e.canBeCollidedWith())));
 		double d2 = d1;
 
 		for (int j = 0; j < list.size(); ++j) {
 			Entity entity1 = (Entity) list.get(j);
 			float f1 = entity1.getCollisionBorderSize();
-			AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().expand((double) f1, (double) f1, (double) f1);
+			AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().grow((double) f1);
 			RayTraceResult RayTraceResult = axisalignedbb.calculateIntercept(eyePos, maxRay);
 
 			if (axisalignedbb.contains(eyePos)) {

@@ -266,12 +266,16 @@ public class NBTFrame extends JFrame {
 		if (init != null) {
 			String ret = JOptionPane.showInputDialog(this, "Please enter the new value", init);
 			NBTBase nbtNew = NBTUtils.stringToNbt(ret, curr);
-			if (above instanceof NBTTagCompound) {
-				((NBTTagCompound) above).setTag(key, nbtNew);
-			} else if (above instanceof NBTTagList) {
-				((NBTTagList) above).set(Integer.parseInt(key), nbtNew);
+			if (nbtNew!=null) {
+				if (above instanceof NBTTagCompound) {
+					((NBTTagCompound) above).setTag(key, nbtNew);
+				} else if (above != null) {
+					((NBTTagList) above).set(Integer.parseInt(key), nbtNew);
+				}
+				updateNbt();
+			} else {
+				JOptionPane.showMessageDialog(this, "The given input is invalid", "Invalid input!", JOptionPane.ERROR_MESSAGE);
 			}
-			updateNbt();
 		}
 	}
 

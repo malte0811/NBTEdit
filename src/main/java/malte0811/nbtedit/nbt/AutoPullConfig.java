@@ -6,10 +6,12 @@ public final class AutoPullConfig {
 	public final NBTFrame frame;
 	public int delta;
 	public int counter;
+
 	public AutoPullConfig(NBTFrame key, int d) {
 		frame = key;
 		delta = d;
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -17,6 +19,7 @@ public final class AutoPullConfig {
 		result = prime * result + ((frame == null) ? 0 : frame.hashCode());
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {

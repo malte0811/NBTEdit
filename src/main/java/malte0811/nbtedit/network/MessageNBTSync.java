@@ -13,13 +13,15 @@ public class MessageNBTSync implements IMessage {
 	EditPosKey pos;
 	NBTTagCompound value;
 	boolean forCache = true;
+
 	public MessageNBTSync(EditPosKey k, NBTTagCompound val, boolean cache) {
 		pos = k;
 		value = val;
 		forCache = cache;
 	}
 
-	public MessageNBTSync() {}
+	public MessageNBTSync() {
+	}
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
@@ -33,8 +35,8 @@ public class MessageNBTSync implements IMessage {
 	@Override
 	public void toBytes(ByteBuf buf) {
 		pos.toBytes(buf);
-		buf.writeBoolean(value!=null);
-		if (value!=null) {
+		buf.writeBoolean(value != null);
+		if (value != null) {
 			ByteBufUtils.writeTag(buf, value);
 			buf.writeBoolean(forCache);
 		}

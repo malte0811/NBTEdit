@@ -4,12 +4,12 @@ buildscript {
         maven { url = "http://files.minecraftforge.net/maven" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "0.4"
+version = "0.5"
 group= "malte0811" 
 archivesBaseName = "NBTEdit"
 
@@ -21,7 +21,7 @@ compileJava {
 }
 
 minecraft {
-    version = "13.20.0.2282"
+    version = "1.12-14.21.1.2395"
     runDir = "run"
     replace '${version}', project.version
     
@@ -30,7 +30,7 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not allways work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20170323"
+    mappings = "snapshot_20170624"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
@@ -92,5 +92,5 @@ repositories {
 }
 
 dependencies {
-    deobfCompile "blusunrize:ImmersiveEngineering:0.10-+:deobf"
+    deobfCompile "blusunrize:ImmersiveEngineering:0.11-+:deobf"
 }

@@ -1,11 +1,11 @@
 package malte0811.nbtedit.nbt;
 
-import java.util.UUID;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
+
+import java.util.UUID;
 
 public class EditPosKey {
 	public final UUID player;
@@ -18,8 +18,9 @@ public class EditPosKey {
 	public final BlockPos tPos;
 	//hand
 	public final EnumHand hand;
-	
+
 	private static final EnumHand[] hands = EnumHand.values();
+
 	public EditPosKey(UUID p, int dim, int eId) {
 		player = p;
 		ePos = eId;
@@ -28,6 +29,7 @@ public class EditPosKey {
 		type = PosType.ENTITY;
 		hand = EnumHand.MAIN_HAND;
 	}
+
 	public EditPosKey(UUID p, int dim, BlockPos pos) {
 		player = p;
 		tPos = pos;
@@ -36,6 +38,7 @@ public class EditPosKey {
 		type = PosType.TILEENTITY;
 		hand = EnumHand.MAIN_HAND;
 	}
+
 	public EditPosKey(UUID p, EnumHand h) {
 		player = p;
 		tPos = null;
@@ -44,23 +47,24 @@ public class EditPosKey {
 		type = PosType.HAND;
 		hand = h;
 	}
+
 	public static EditPosKey fromBytes(ByteBuf buf) {
 		UUID user = UUID.fromString(ByteBufUtils.readUTF8String(buf));
 		int d = buf.readInt();
 		byte t = buf.readByte();
 		PosType type = PosType.values[t];
 		switch (type) {
-		case ENTITY:
-			int e = buf.readInt();
-			return new EditPosKey(user, d, e);
-		case TILEENTITY:
-			int x = buf.readInt();
-			int y = buf.readInt();
-			int z = buf.readInt();
-			return new EditPosKey(user, d, new BlockPos(x, y, z));
-		case HAND:
-			byte h = buf.readByte();
-			return new EditPosKey(user, hands[h]);
+			case ENTITY:
+				int e = buf.readInt();
+				return new EditPosKey(user, d, e);
+			case TILEENTITY:
+				int x = buf.readInt();
+				int y = buf.readInt();
+				int z = buf.readInt();
+				return new EditPosKey(user, d, new BlockPos(x, y, z));
+			case HAND:
+				byte h = buf.readByte();
+				return new EditPosKey(user, hands[h]);
 		}
 		return null;
 	}
@@ -70,20 +74,21 @@ public class EditPosKey {
 		buf.writeInt(dim);
 		buf.writeByte(type.ordinal());
 		switch (type) {
-		case ENTITY:
-			//entity
-			buf.writeInt(ePos);
-			break;
-		case TILEENTITY:
-			//tile entity
-			buf.writeInt(tPos.getX());
-			buf.writeInt(tPos.getY());
-			buf.writeInt(tPos.getZ());
-			break;
-		case HAND:
-			buf.writeByte(hand.ordinal());
+			case ENTITY:
+				//entity
+				buf.writeInt(ePos);
+				break;
+			case TILEENTITY:
+				//tile entity
+				buf.writeInt(tPos.getX());
+				buf.writeInt(tPos.getY());
+				buf.writeInt(tPos.getZ());
+				break;
+			case HAND:
+				buf.writeByte(hand.ordinal());
 		}
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -95,6 +100,7 @@ public class EditPosKey {
 		result = prime * result + ((tPos == null) ? 0 : tPos.hashCode());
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -104,7 +110,7 @@ public class EditPosKey {
 		if (getClass() != obj.getClass())
 			return false;
 		EditPosKey other = (EditPosKey) obj;
-		if (type!=other.type) {
+		if (type != other.type) {
 			return false;
 		}
 		if (dim != other.dim)
@@ -126,6 +132,7 @@ public class EditPosKey {
 			return false;
 		return true;
 	}
+
 	public static enum PosType {
 		TILEENTITY,
 		ENTITY,

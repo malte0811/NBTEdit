@@ -9,11 +9,13 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageOpenWindow implements IMessage {
 	EditPosKey pos;
+
 	public MessageOpenWindow(EditPosKey k) {
 		pos = k;
 	}
-	
-	public MessageOpenWindow() {}
+
+	public MessageOpenWindow() {
+	}
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
@@ -25,11 +27,9 @@ public class MessageOpenWindow implements IMessage {
 		pos.toBytes(buf);
 	}
 
-	public static class ClientHandler implements IMessageHandler<MessageOpenWindow, IMessage>
-	{
+	public static class ClientHandler implements IMessageHandler<MessageOpenWindow, IMessage> {
 		@Override
-		public IMessage onMessage(MessageOpenWindow msg, MessageContext ctx)
-		{
+		public IMessage onMessage(MessageOpenWindow msg, MessageContext ctx) {
 			new Thread(new Runnable() {
 				@Override
 				public void run() {

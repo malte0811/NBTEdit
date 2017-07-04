@@ -1,9 +1,9 @@
 package malte0811.nbtedit.api;
 
-import javax.swing.JMenu;
-
 import malte0811.nbtedit.gui.NBTFrame;
 import net.minecraft.nbt.NBTTagCompound;
+
+import javax.swing.*;
 
 public interface IEditHandler {
 	public void addMenuItems(NBTTagCompound nbt, JMenu j, NBTFrame frame);

@@ -9,10 +9,10 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 public class ClientEventHandler {
 	@SubscribeEvent
 	public void onTick(TickEvent.ClientTickEvent event) {
-		if (event.phase==Phase.END) {
-			for (AutoPullConfig pull:NBTEdit.proxy.getAutoPulls()) {
+		if (event.phase == Phase.END) {
+			for (AutoPullConfig pull : NBTEdit.proxy.getAutoPulls()) {
 				pull.counter++;
-				if (pull.counter>=pull.delta) {
+				if (pull.counter >= pull.delta) {
 					pull.counter = 0;
 					pull.frame.pullNbt();
 				}

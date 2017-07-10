@@ -9,7 +9,7 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "0.5"
+version = "0.7"
 group= "malte0811" 
 archivesBaseName = "NBTEdit"
 
@@ -21,7 +21,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12-14.21.1.2395"
+    version = "1.12-14.21.1.2406"
     runDir = "run"
     replace '${version}', project.version
     
@@ -32,12 +32,6 @@ minecraft {
     // simply re-run your setup task after changing the mappings to update your workspace.
     mappings = "snapshot_20170624"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
-}
-
-jar {
-	manifest {
-		attributes 'FMLAT': 'NBTEdit_at.cfg'
-	}
 }
 
 dependencies {
@@ -92,5 +86,5 @@ repositories {
 }
 
 dependencies {
-    //deobfCompile "blusunrize:ImmersiveEngineering:0.11-+:deobf"
+    deobfCompile "blusunrize:ImmersiveEngineering:0.12-+:deobf"
 }

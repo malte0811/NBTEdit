@@ -16,20 +16,24 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
 
+import javax.annotation.Nonnull;
+
 public class CommandNbtEdit extends CommandBase {
 
+	@Nonnull
 	@Override
 	public String getName() {
 		return "nbtedit";
 	}
 
+	@Nonnull
 	@Override
-	public String getUsage(ICommandSender sender) {
+	public String getUsage(@Nonnull ICommandSender sender) {
 		return "/nbtedit [<x> <y> <z> [<dim>]] or [hand [<off/main>]] or [self (experimental)]";
 	}
 
 	@Override
-	public void execute(MinecraftServer s, ICommandSender sender, String[] args) throws CommandException {
+	public void execute(@Nonnull MinecraftServer s, @Nonnull ICommandSender sender, @Nonnull String[] args) throws CommandException {
 		EntityPlayer player = getCommandSenderAsPlayer(sender);
 		EditPosKey pos = null;
 		RayTraceResult mop = Utils.rayTrace(player);
@@ -66,9 +70,7 @@ public class CommandNbtEdit extends CommandBase {
 		} else {
 			throw new CommandException("No object found for editing");
 		}
-		if (pos != null) {
-			NBTEdit.packetHandler.sendTo(new MessageOpenWindow(pos), (EntityPlayerMP) player);
-		}
+		NBTEdit.packetHandler.sendTo(new MessageOpenWindow(pos), (EntityPlayerMP) player);
 	}
 
 	private EditPosKey keyFromPos(BlockPos p, EntityPlayer player, int dimension) throws CommandException {

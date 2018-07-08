@@ -11,6 +11,9 @@ import org.apache.logging.log4j.Level;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 public class NBTUtils {
 	public static String nbtToString(NBTBase nbt) {
@@ -50,20 +53,26 @@ public class NBTUtils {
 		return ret;
 	}
 
-	public static String byteArrayToString(byte[] inbs) {
-		String ret = "";
-		for (int i = 0; i < inbs.length; i++) {
-			ret += (i == 0 ? "" : ";") + inbs[i];
+	private static String byteArrayToString(byte[] in) {
+		StringBuilder ret = new StringBuilder();
+		for (int i = 0; i < in.length; i++) {
+			if (i != 0) {
+				ret.append(";");
+			}
+			ret.append(in[i]);
 		}
-		return ret;
+		return ret.toString();
 	}
 
-	public static String intArrayToString(int[] in) {
-		String ret = "";
+	private static String intArrayToString(int[] in) {
+		StringBuilder ret = new StringBuilder();
 		for (int i = 0; i < in.length; i++) {
-			ret += (i == 0 ? "" : ";") + in[i];
+			if (i != 0) {
+				ret.append(";");
+			}
+			ret.append(in[i]);
 		}
-		return ret;
+		return ret.toString();
 	}
 
 	public static NBTBase stringToNbt(String in, NBTBase curr) {
@@ -71,7 +80,8 @@ public class NBTUtils {
 			return curr;
 		NBTBase ret = null;
 		try {
-			switch (NBTBase.NBT_TYPES[curr.getId()]) {//"BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"
+			//"BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]", "LONG[]"
+			switch (NBTBase.NBT_TYPES[curr.getId()]) {
 				case "COMPOUND":
 				case "LIST":
 					break;
@@ -94,14 +104,18 @@ public class NBTUtils {
 					ret = new NBTTagDouble(Double.parseDouble(in));
 					break;
 				case "BYTE[]":
-					ret = new NBTTagByteArray(stringToByteArray(in));
+					ret = new NBTTagByteArray(stringToArray(in, Byte::parseByte));
 					break;
 				case "STRING":
 					ret = new NBTTagString(in);
 					break;
 				case "INT[]":
-					ret = new NBTTagIntArray(stringToIntArray(in));
+					ret = new NBTTagIntArray(stringToArray(in, Integer::parseInt));
 					break;
+				case "LONG[]":
+					ret = new NBTTagLongArray(stringToArray(in, Long::parseLong));
+					break;
+
 			}
 		} catch (Exception x) {
 			ret = null;
@@ -110,20 +124,11 @@ public class NBTUtils {
 		return ret;
 	}
 
-	public static int[] stringToIntArray(String in) {
+	private static <T> List<T> stringToArray(String in, Function<String, T> parse) {
 		String[] data = in.split(";");
-		int[] ret = new int[data.length];
-		for (int i = 0; i < data.length; i++) {
-			ret[i] = Integer.parseInt(data[i]);
-		}
-		return ret;
-	}
-
-	public static byte[] stringToByteArray(String in) {
-		String[] data = in.split(";");
-		byte[] ret = new byte[data.length];
-		for (int i = 0; i < data.length; i++) {
-			ret[i] = Byte.parseByte(data[i]);
+		List<T> ret = new ArrayList<>(data.length);
+		for (String aData : data) {
+			ret.add(parse.apply(aData));
 		}
 		return ret;
 	}

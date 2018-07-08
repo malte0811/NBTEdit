@@ -1,0 +1,3 @@
+nbtedit.no_object=No object found for editing
+nbtedit.invalid_hand=%s is not a valid hand
+nbtedit.no_te=No TileEntity found at {%d, %d, %d}

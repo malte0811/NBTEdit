@@ -25,7 +25,7 @@ public class Compat {
     				menu.add(i);
     			}
     		});
-			NBTEdit.logger.info("Immersive Engineering compat is disabled since it isn't available for 1.12 yet");
+			//NBTEdit.logger.info("Immersive Engineering compat is disabled since it isn't available for 1.12 yet");
 		}
 	}
 }

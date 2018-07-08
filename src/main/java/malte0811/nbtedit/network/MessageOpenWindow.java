@@ -3,6 +3,8 @@ package malte0811.nbtedit.network;
 import io.netty.buffer.ByteBuf;
 import malte0811.nbtedit.gui.NBTFrame;
 import malte0811.nbtedit.nbt.EditPosKey;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -30,12 +32,11 @@ public class MessageOpenWindow implements IMessage {
 	public static class ClientHandler implements IMessageHandler<MessageOpenWindow, IMessage> {
 		@Override
 		public IMessage onMessage(MessageOpenWindow msg, MessageContext ctx) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					new NBTFrame(msg.pos);
-				}
-			}).start();
+			Minecraft.getMinecraft().addScheduledTask(
+					() -> {
+						new NBTFrame(msg.pos);
+						Minecraft.getMinecraft().displayGuiScreen(new GuiChat());
+					});
 			return null;
 		}
 	}

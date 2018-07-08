@@ -21,7 +21,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12-14.21.1.2406"
+    version = "14.23.3.2655"
     runDir = "run"
     replace '${version}', project.version
     
@@ -30,8 +30,7 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not allways work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20170624"
-    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    mappings = "snapshot_20180708"
 }
 
 dependencies {
@@ -77,6 +76,30 @@ processResources
         exclude 'mcmod.info'
     }
 }
+
+jar {
+	from 'LICENSE'
+    manifest {
+        attributes 'Maven-Artifact': group+':'+archivesBaseName+':'+version
+    }
+}
+
+task signMain(type: SignJar) {
+    onlyIf {
+        project.hasProperty('keyStore')
+    }
+    dependsOn reobfJar
+    if (project.hasProperty('keyStore')) {
+        keyStore = project.keyStore
+        alias = project.storeAlias
+        storePass = project.storePass
+        keyPass = project.storePass
+        inputFile = jar.archivePath
+        outputFile = jar.archivePath
+    }
+}
+
+build.dependsOn signMain
 
 repositories {
     maven {

@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ClientCommandHandler;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,5 +71,9 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public Set<AutoPullConfig> getAutoPulls() {
 		return autoPulls;
+	}
+
+	public void registerClientCommands() {
+		ClientCommandHandler.instance.registerCommand(NBTEdit.editNbt);
 	}
 }

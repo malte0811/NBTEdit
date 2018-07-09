@@ -109,5 +109,5 @@ repositories {
 }
 
 dependencies {
-    deobfCompile "blusunrize:ImmersiveEngineering:0.12-+:deobf"
+    deobfCompile "blusunrize:ImmersiveEngineering:0.12-+"
 }

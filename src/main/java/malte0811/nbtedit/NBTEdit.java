@@ -5,7 +5,6 @@ import malte0811.nbtedit.client.NBTClipboard;
 import malte0811.nbtedit.command.CommandNbtEdit;
 import malte0811.nbtedit.nbt.CommonProxy;
 import malte0811.nbtedit.network.MessageNBTSync;
-import malte0811.nbtedit.network.MessageOpenWindow;
 import malte0811.nbtedit.network.MessagePushNBT;
 import malte0811.nbtedit.network.MessageRequestNBT;
 import net.minecraftforge.common.MinecraftForge;
@@ -13,7 +12,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -29,7 +27,7 @@ public class NBTEdit {
 	@SidedProxy(clientSide = "malte0811.nbtedit.nbt.ClientProxy", serverSide = "malte0811.nbtedit.nbt.CommonProxy")
 	public static CommonProxy proxy;
 	public static CommonProxy commonProxyInstance = new CommonProxy();
-	public static CommandNbtEdit editNbt;
+	public static CommandNbtEdit editNbt = new CommandNbtEdit();
 	public static Logger logger;
 
 	@Mod.EventHandler
@@ -41,7 +39,6 @@ public class NBTEdit {
 	public void init(FMLInitializationEvent event) {
 		int id = 0;
 		packetHandler.registerMessage(MessageNBTSync.ClientHandler.class, MessageNBTSync.class, id++, Side.CLIENT);
-		packetHandler.registerMessage(MessageOpenWindow.ClientHandler.class, MessageOpenWindow.class, id++, Side.CLIENT);
 		packetHandler.registerMessage(MessagePushNBT.ServerHandler.class, MessagePushNBT.class, id++, Side.SERVER);
 		packetHandler.registerMessage(MessageRequestNBT.ServerHandler.class, MessageRequestNBT.class, id++, Side.SERVER);
 		if (event.getSide() == Side.CLIENT) {
@@ -49,11 +46,6 @@ public class NBTEdit {
 			Compat.registerHandlers();
 		}
 		MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
-	}
-
-	@Mod.EventHandler
-	public void serverStart(FMLServerStartingEvent ev) {
-		editNbt = new CommandNbtEdit();
-		ev.registerServerCommand(editNbt);
+		proxy.registerClientCommands();
 	}
 }

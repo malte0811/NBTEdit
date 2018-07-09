@@ -80,4 +80,8 @@ public class CommonProxy {
 	public Set<AutoPullConfig> getAutoPulls() {
 		return new HashSet<>();
 	}
+
+	public void registerClientCommands() {
+
+	}
 }

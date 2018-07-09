@@ -1,15 +1,15 @@
 package malte0811.nbtedit.command;
 
-import malte0811.nbtedit.NBTEdit;
+import malte0811.nbtedit.gui.NBTFrame;
 import malte0811.nbtedit.nbt.EditPosKey;
-import malte0811.nbtedit.network.MessageOpenWindow;
 import malte0811.nbtedit.util.Utils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -40,7 +40,7 @@ public class CommandNbtEdit extends CommandBase {
 
 	@Override
 	public void execute(@Nonnull MinecraftServer s, @Nonnull ICommandSender sender, @Nonnull String[] args) throws CommandException {
-		EntityPlayer player = getCommandSenderAsPlayer(sender);
+		EntityPlayer player = Minecraft.getMinecraft().player;
 		EditPosKey pos;
 		if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase(HAND)) {
 			EnumHand h = EnumHand.MAIN_HAND;
@@ -78,7 +78,14 @@ public class CommandNbtEdit extends CommandBase {
 				throw new CommandException("nbtedit.no_object");
 			}
 		}
-		NBTEdit.packetHandler.sendTo(new MessageOpenWindow(pos), (EntityPlayerMP) player);
+		new NBTFrame(pos);
+		// Necessary to have this run one tick later, after the GUI closes.
+		// The new thread is needed to stop MC from running this immidiately
+		new Thread(() ->
+				Minecraft.getMinecraft().addScheduledTask(
+						() ->
+								Minecraft.getMinecraft().displayGuiScreen(new GuiChat())))
+				.start();
 	}
 
 	private EditPosKey keyFromPos(BlockPos p, EntityPlayer player, int dimension) throws CommandException {

@@ -15,7 +15,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NBTClipboard {
-	private static Map<String, NBTBase> copied = new ConcurrentHashMap<>();
+	private static final Map<String, NBTBase> copied = new ConcurrentHashMap<>();
 
 	public static void saveToClipboard(NBTBase val, String name) {
 		copied.put(name, val.copy());

@@ -13,7 +13,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 
-public class NBTTreeCellRenderer extends DefaultTreeCellRenderer {
+class NBTTreeCellRenderer extends DefaultTreeCellRenderer {
 
 	private static final Icon[] nbtIcons = new Icon[NBTBase.NBT_TYPES.length];
 

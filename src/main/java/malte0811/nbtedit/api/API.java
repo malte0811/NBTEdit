@@ -5,20 +5,17 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.RegistryNamespaced;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "WeakerAccess", "unused"})
 public class API {
 	private API() {
 	}
 
-	private static Map<Class<? extends Entity>, IEditHandler> entityHandlers = new ConcurrentHashMap<>();
-	private static Map<Class<? extends TileEntity>, IEditHandler> tileHandlers = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends Entity>, IEditHandler> entityHandlers = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends TileEntity>, IEditHandler> tileHandlers = new ConcurrentHashMap<>();
 
 	public static void registerTileHandler(Class<? extends TileEntity> c, IEditHandler e) {
 		if (!tileHandlers.containsKey(c)) {
@@ -36,19 +33,6 @@ public class API {
 		}
 	}
 
-	private static RegistryNamespaced<ResourceLocation, Class<? extends TileEntity>> registry;
-
-	//TODO find a way to do this without reflection
-	static {
-		try {
-			String name = ObfuscationReflectionHelper.remapFieldNames(TileEntity.class.getName(), "field_190562_f")[0];
-			Field teRegistry = TileEntity.class.getDeclaredField(name);
-			teRegistry.setAccessible(true);
-			registry = (RegistryNamespaced<ResourceLocation, Class<? extends TileEntity>>) teRegistry.get(null);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
-	}
 
 	public static IEditHandler getEntityHandler(String e) {
 		Class<?> c = EntityList.getClass(new ResourceLocation(e));
@@ -62,7 +46,7 @@ public class API {
 	}
 
 	public static IEditHandler getTileHandler(String s) {
-		Class<?> c = registry.getObject(new ResourceLocation(s));
+		Class<?> c = TileEntity.REGISTRY.getObject(new ResourceLocation(s));
 		while (c != null && c != Entity.class && c != Object.class) {
 			if (tileHandlers.containsKey(c)) {
 				return tileHandlers.get(c);

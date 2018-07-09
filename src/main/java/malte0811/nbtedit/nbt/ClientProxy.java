@@ -3,43 +3,29 @@ package malte0811.nbtedit.nbt;
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.network.MessagePushNBT;
 import malte0811.nbtedit.network.MessageRequestNBT;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class ClientProxy extends CommonProxy {
-	private Set<AutoPullConfig> autoPulls = Collections.newSetFromMap(new ConcurrentHashMap<>());
-	private Map<EditPosKey, NBTTagCompound> cache = new ConcurrentHashMap<>();
-	private Set<EditPosKey> unread = new HashSet<>();
+	private final Set<AutoPullConfig> autoPulls = Collections.newSetFromMap(new ConcurrentHashMap<>());
+	private final Map<EditPosKey, NBTTagCompound> cache = new ConcurrentHashMap<>();
+	private final Map<EditPosKey, Consumer<NBTTagCompound>> WAITING = new HashMap<>();
 
 	@Override
-	public NBTTagCompound getNBT(EditPosKey k, boolean sync) {
+	public void requestNBT(EditPosKey k, boolean sync, @Nonnull Consumer<NBTTagCompound> out) {
 		if (sync) {
-			if (Minecraft.getMinecraft().isSingleplayer())
-				return super.getNBT(k, sync);
 			NBTEdit.packetHandler.sendToServer(new MessageRequestNBT(k));
-			try {
-				synchronized (this) {
-					while (!unread.contains(k) && Minecraft.getMinecraft().world != null) {
-						wait(1000);
-					}
-				}
-				unread.remove(k);
-				return cache.get(k);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			return null;
+			WAITING.put(k, out);
 		} else {
-			return cache.get(k);
+			out.accept(cache.get(k));
 		}
 	}
 
@@ -55,16 +41,8 @@ public class ClientProxy extends CommonProxy {
 		} else {
 			cache.remove(pos);
 		}
-		unread.add(pos);
-	}
-
-	@Override
-	public void syncNBT(EditPosKey pos, NBTTagCompound nbt) {
-		World w = Minecraft.getMinecraft().world;
-		TileEntity te = w.getTileEntity(pos.tPos);
-		if (te != null) {
-			te.readFromNBT(nbt);
-			w.markBlockRangeForRenderUpdate(pos.tPos, pos.tPos);
+		if (WAITING.containsKey(pos)) {
+			WAITING.remove(pos).accept(nbt);
 		}
 	}
 

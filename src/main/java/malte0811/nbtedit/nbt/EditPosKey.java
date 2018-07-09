@@ -137,6 +137,7 @@ public class EditPosKey {
 		TILEENTITY,
 		ENTITY,
 		HAND;
+		@SuppressWarnings("WeakerAccess")
 		public static final PosType[] values = values();
 	}
 }

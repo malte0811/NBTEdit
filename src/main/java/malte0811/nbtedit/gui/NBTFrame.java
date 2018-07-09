@@ -30,14 +30,14 @@ import java.util.Set;
 
 public class NBTFrame extends JFrame {
 	private static final long serialVersionUID = -8001779180003715111L;
-	public EditPosKey editPos;
+	public final EditPosKey editPos;
 	private NBTTagCompound nbtRoot;
 	private JTree tree;
 	private JScrollPane scroll;
-	private JButton push = new JButton("Push NBT to world");
-	private JButton pull = new JButton("Pull NBT from world");
-	private JButton autoPull = new JButton("Enable auto pulling");
-	private JPanel panel = new JPanel();
+	private final JButton push = new JButton("Push NBT to world");
+	private final JButton pull = new JButton("Pull NBT from world");
+	private final JButton autoPull = new JButton("Enable auto pulling");
+	private final JPanel panel = new JPanel();
 	private JMenuBar bar;
 
 	public NBTFrame(EditPosKey pos) {
@@ -55,8 +55,10 @@ public class NBTFrame extends JFrame {
 	}
 
 	public void pullNbt() {
-		nbtRoot = NBTEdit.proxy.getNBT(editPos, true);
-		SwingUtilities.invokeLater(this::updateNbt);
+		NBTEdit.proxy.requestNBT(editPos, true, (nbt) -> {
+			nbtRoot = nbt;
+			SwingUtilities.invokeLater(this::updateNbt);
+		});
 	}
 
 	private void initGUI() {
@@ -674,7 +676,7 @@ public class NBTFrame extends JFrame {
 		return o.toString();
 	}
 
-	public void pushNbt() {
+	private void pushNbt() {
 		try {
 			NBTEdit.proxy.setNBT(editPos, nbtRoot);
 		} catch (RuntimeException x) {

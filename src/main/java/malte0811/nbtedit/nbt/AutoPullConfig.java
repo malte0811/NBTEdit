@@ -4,7 +4,7 @@ import malte0811.nbtedit.gui.NBTFrame;
 
 public final class AutoPullConfig {
 	public final NBTFrame frame;
-	public int delta;
+	public final int delta;
 	public int counter;
 
 	public AutoPullConfig(NBTFrame key, int d) {

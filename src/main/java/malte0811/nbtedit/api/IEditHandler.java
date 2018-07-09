@@ -6,5 +6,5 @@ import net.minecraft.nbt.NBTTagCompound;
 import javax.swing.*;
 
 public interface IEditHandler {
-	public void addMenuItems(NBTTagCompound nbt, JMenu j, NBTFrame frame);
+	void addMenuItems(NBTTagCompound nbt, JMenu j, NBTFrame frame);
 }

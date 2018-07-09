@@ -9,7 +9,7 @@ import net.minecraftforge.fml.common.Loader;
 
 import javax.swing.*;
 
-public class Compat {
+class Compat {
 	public static void registerHandlers() {
 		if (Loader.isModLoaded("immersiveengineering")) {
 			API.registerTileHandler(TileEntityMultiblockPart.class, (nbt, menu, frame)->{

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -41,38 +42,19 @@ public class NBTUtils {
 				ret = Double.toString(((NBTTagDouble) nbt).getDouble());
 				break;
 			case "BYTE[]":
-				ret = byteArrayToString((((NBTTagByteArray) nbt).getByteArray()));
+				ret = Arrays.toString((((NBTTagByteArray) nbt).getByteArray()));
 				break;
 			case "STRING":
 				ret = ((NBTTagString) nbt).getString();
 				break;
 			case "INT[]":
-				ret = intArrayToString(((NBTTagIntArray) nbt).getIntArray());
+				ret = Arrays.toString(((NBTTagIntArray) nbt).getIntArray());
+				break;
+			case "LONG[]":
+				ret = "Currently not supported!";// TODO Arrays.toString(((NBTTagLongArray) nbt).data);
 				break;
 		}
 		return ret;
-	}
-
-	private static String byteArrayToString(byte[] in) {
-		StringBuilder ret = new StringBuilder();
-		for (int i = 0; i < in.length; i++) {
-			if (i != 0) {
-				ret.append(";");
-			}
-			ret.append(in[i]);
-		}
-		return ret.toString();
-	}
-
-	private static String intArrayToString(int[] in) {
-		StringBuilder ret = new StringBuilder();
-		for (int i = 0; i < in.length; i++) {
-			if (i != 0) {
-				ret.append(";");
-			}
-			ret.append(in[i]);
-		}
-		return ret.toString();
 	}
 
 	public static NBTBase stringToNbt(String in, NBTBase curr) {
@@ -125,7 +107,7 @@ public class NBTUtils {
 	}
 
 	private static <T> List<T> stringToArray(String in, Function<String, T> parse) {
-		String[] data = in.split(";");
+		String[] data = in.split(", ");
 		List<T> ret = new ArrayList<>(data.length);
 		for (String aData : data) {
 			ret.add(parse.apply(aData));

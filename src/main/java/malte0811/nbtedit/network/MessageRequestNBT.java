@@ -3,13 +3,15 @@ package malte0811.nbtedit.network;
 import io.netty.buffer.ByteBuf;
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.nbt.EditPosKey;
+import malte0811.nbtedit.util.Utils;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageRequestNBT implements IMessage {
-	EditPosKey pos;
+	private EditPosKey pos;
 
 	public MessageRequestNBT(EditPosKey e) {
 		pos = e;
@@ -31,11 +33,16 @@ public class MessageRequestNBT implements IMessage {
 	public static class ServerHandler implements IMessageHandler<MessageRequestNBT, IMessage> {
 		@Override
 		public IMessage onMessage(MessageRequestNBT msg, MessageContext ctx) {
-			if (NBTEdit.editNbt.checkPermission(ctx.getServerHandler().player.mcServer, ctx.getServerHandler().player)) {
-				NBTTagCompound val = NBTEdit.commonProxyInstance.getNBT(msg.pos, false);
-				return new MessageNBTSync(msg.pos, val, true);
-			}
-			NBTEdit.logger.error("Player " + ctx.getServerHandler().player.getDisplayNameString() + " tried to request NBT data from the server but isn't permitted to do so!");
+			EntityPlayerMP player = ctx.getServerHandler().player;
+			player.getServerWorld().addScheduledTask(() -> {
+				if (NBTEdit.editNbt.checkPermission(player.mcServer, player)) {
+					NBTTagCompound val = Utils.getNBTForPos(msg.pos);
+					NBTEdit.packetHandler.sendTo(new MessageNBTSync(msg.pos, val), player);
+				} else {
+					NBTEdit.logger.error("Player " + ctx.getServerHandler().player.getDisplayNameString() +
+							" tried to request NBT data from the server but isn't permitted to do so!");
+				}
+			});
 			return null;
 		}
 	}

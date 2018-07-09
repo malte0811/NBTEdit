@@ -106,6 +106,7 @@ public class CommandNbtEdit extends CommandBase {
 			ret.add(HAND_OFF);
 		}
 		if (args.length == 1 || (args.length > 1 && args.length <= 3)) {
+			//noinspection CatchMayIgnoreException
 			try {
 				if (args.length > 1) {
 					Integer.parseInt(args[0]);

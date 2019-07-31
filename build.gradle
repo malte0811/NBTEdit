@@ -44,20 +44,20 @@ repositories {
 
 dependencies {
     compileOnly "blusunrize:ImmersiveEngineering:0.12-+"
-    minecraft 'net.minecraftforge:forge:1.14.3-27.0.25'
+    minecraft 'net.minecraftforge:forge:1.14.4-28.0.27'
 }
 
 processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property 'version', project.version
-    inputs.property 'mcversion', '1.14.3'
+    inputs.property 'mcversion', '1.14.4'
 
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'META_INF/mods.toml'
 
         // replace version and mcversion
-        expand 'version':project.version, 'mcversion': '1.14.3'
+        expand 'version':project.version, 'mcversion': '1.14.4'
     }
 
     // copy everything else except the mods.toml

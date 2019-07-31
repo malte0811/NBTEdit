@@ -32,13 +32,13 @@ public class MessagePushNBT {
 	public void onMessage(Supplier<NetworkEvent.Context> ctxSupplier) {
 		NetworkEvent.Context ctx = ctxSupplier.get();
 		ServerPlayerEntity player = ctx.getSender();
-		if (player!=null) {
+		if (player != null) {
 			ctx.enqueueWork(() -> {
 				if (player.hasPermissionLevel(2)) {
 					Utils.setNBTAtPos(pos, value, player.server);
 				} else {
 					NBTEdit.logger.error("Player " + player.getName() +
-							" tried to push NBT data to the server but isn't permitted to do so!");
+						" tried to push NBT data to the server but isn't permitted to do so!");
 				}
 			});
 		}

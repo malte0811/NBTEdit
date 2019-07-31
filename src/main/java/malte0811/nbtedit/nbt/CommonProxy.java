@@ -11,10 +11,12 @@ import java.util.function.Consumer;
 
 public class CommonProxy implements INBTEditingProvider {
 	@Override
-	public void setNBT(EditPosKey k, CompoundNBT newNbt, CompoundNBT lastKnown) {}
+	public void setNBT(EditPosKey k, CompoundNBT newNbt, CompoundNBT lastKnown) {
+	}
 
 	@Override
-	public void requestNBT(EditPosKey k, @Nonnull Consumer<CompoundNBT> out) {}
+	public void requestNBT(EditPosKey k, @Nonnull Consumer<CompoundNBT> out) {
+	}
 
 	@Override
 	public boolean supportsType(ObjectType type) {

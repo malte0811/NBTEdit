@@ -1,16 +1,18 @@
 [
-{
-  "modid": "nbtedit",
-  "name": "NBTEdit",
-  "description": "In-game NBT editing for Entities and TileEntities",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
-  "url": "",
-  "updateUrl": "",
-  "authorList": ["malte0811"],
-  "credits": " DavidGoldman for the MC 1.7.10-equivalent of this mod",
-  "logoFile": "",
-  "screenshots": [],
-  "dependencies": []
-}
+  {
+    "modid": "nbtedit",
+    "name": "NBTEdit",
+    "description": "In-game NBT editing for Entities and TileEntities",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "malte0811"
+    ],
+    "credits": " DavidGoldman for the MC 1.7.10-equivalent of this mod",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
 ]

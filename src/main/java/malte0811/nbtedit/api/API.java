@@ -38,14 +38,14 @@ public class API {
 	//TODO readd class hierarchy things
 	public static IEditHandler getEntityHandler(String e) {
 		EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(e));
-		if (type==null)
+		if (type == null)
 			return null;
 		return entityHandlers.get(type);
 	}
 
 	public static IEditHandler getTileHandler(String s) {
 		TileEntityType d = ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(s));
-		if (d==null)
+		if (d == null)
 			return null;
 		return tileHandlers.get(d);
 	}

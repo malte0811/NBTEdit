@@ -28,7 +28,7 @@ public class MessageRequestNBT {
 
 	public void onMessage(Supplier<NetworkEvent.Context> ctx) {
 		ServerPlayerEntity player = ctx.get().getSender();
-		if (player==null) {
+		if (player == null) {
 			return;
 		}
 		MinecraftServer server = player.server;
@@ -38,7 +38,7 @@ public class MessageRequestNBT {
 				NBTEdit.packetHandler.reply(new MessageNBTSync(pos, val), ctx.get());
 			} else {
 				NBTEdit.logger.error("Player " + player.getName() +
-						" tried to request NBT data from the server but isn't permitted to do so!");
+					" tried to request NBT data from the server but isn't permitted to do so!");
 			}
 		});
 		ctx.get().setPacketHandled(true);

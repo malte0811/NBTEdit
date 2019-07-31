@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 
 public interface INBTEditingProvider {
 	void setNBT(EditPosKey k, CompoundNBT newNbt, CompoundNBT lastKnown);
+
 	void requestNBT(EditPosKey k, @Nonnull Consumer<CompoundNBT> out);
+
 	boolean supportsType(ObjectType type);
 }

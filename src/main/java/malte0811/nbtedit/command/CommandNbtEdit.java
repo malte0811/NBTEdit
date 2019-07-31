@@ -63,9 +63,9 @@ public class CommandNbtEdit {
 				)
 			)
 			.then(Commands.literal("hand")
-				.executes(data->editHand(data.getSource(), Hand.MAIN_HAND))
+				.executes(data -> editHand(data.getSource(), Hand.MAIN_HAND))
 				.then(Commands.argument("hand", new HandArgument())
-				.executes(data->editHand(data.getSource(), data.getArgument("hand", Hand.class))))
+					.executes(data -> editHand(data.getSource(), data.getArgument("hand", Hand.class))))
 			)
 		);
 	}
@@ -84,21 +84,21 @@ public class CommandNbtEdit {
 	private static final Message NO_OBJECT_MSG = new TranslationTextComponent("nbtedit.no_object");
 
 	private static final CommandExceptionType NO_OBJECT_TYPE = new DynamicCommandExceptionType(
-		obj->NO_OBJECT_MSG
+		obj -> NO_OBJECT_MSG
 	);
 
 	private static final CommandExceptionType NO_TILE_TYPE = new DynamicCommandExceptionType(
-		obj->NO_OBJECT_MSG
+		obj -> NO_OBJECT_MSG
 	);
 
 	public static int editRaytrace(CommandSource src) throws CommandSyntaxException {
 		PlayerEntity player = src.asPlayer();
 		RayTraceResult mop = Utils.rayTrace(player);
 		if (mop != null && mop.getType() == Type.BLOCK) {
-			BlockPos bPos = ((BlockRayTraceResult)mop).getPos();
+			BlockPos bPos = ((BlockRayTraceResult) mop).getPos();
 			return editPos(src, bPos);
 		} else if (mop != null && mop.getType() == Type.ENTITY) {
-			Entity e = ((EntityRayTraceResult)mop).getEntity();
+			Entity e = ((EntityRayTraceResult) mop).getEntity();
 			return editEntity(src, e);
 		} else {
 			throw new CommandSyntaxException(NO_OBJECT_TYPE, NO_OBJECT_MSG);
@@ -106,7 +106,7 @@ public class CommandNbtEdit {
 	}
 
 	private static void openEditWindow(ServerPlayerEntity player, EditPosKey pos) throws CommandSyntaxException {
-		NBTEdit.packetHandler.send(PacketDistributor.PLAYER.with(()->player), new MessageOpenWindow(pos));
+		NBTEdit.packetHandler.send(PacketDistributor.PLAYER.with(() -> player), new MessageOpenWindow(pos));
 	}
 
 	public static int editPos(CommandSource src, BlockPos pos) throws CommandSyntaxException {
@@ -135,6 +135,7 @@ public class CommandNbtEdit {
 
 	private static class HandArgument implements ArgumentType<Hand> {
 		private static final BiMap<Hand, String> hands = EnumHashBiMap.create(Hand.class);
+
 		static {
 			hands.put(Hand.MAIN_HAND, "main");
 			hands.put(Hand.OFF_HAND, "off");
@@ -152,7 +153,7 @@ public class CommandNbtEdit {
 
 		@Override
 		public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-			for (String s:hands.values()) {
+			for (String s : hands.values()) {
 				builder.suggest(s);
 			}
 			return builder.buildFuture();

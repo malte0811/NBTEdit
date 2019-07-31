@@ -34,17 +34,17 @@ public final class Utils {
 		Vec3d Vec3d2 = eyePos.add(Vec3d1.x * d0, Vec3d1.y * d0, Vec3d1.z * d0);
 		RayTraceResult block = entity.world.rayTraceBlocks(new RayTraceContext(eyePos, Vec3d2, RayTraceContext.BlockMode.OUTLINE,
 			RayTraceContext.FluidMode.NONE, entity));
-		double d1 = block.getType()==Type.BLOCK ? block.getHitVec().distanceTo(eyePos)
-				: Double.MAX_VALUE;
+		double d1 = block.getType() == Type.BLOCK ? block.getHitVec().distanceTo(eyePos)
+			: Double.MAX_VALUE;
 		Vec3d lookVec = entity.getLook(1);
 		Vec3d maxRay = eyePos.add(lookVec.x * d0, lookVec.y * d0, lookVec.z * d0);
 		Entity pointedEntity = null;
 		Vec3d target = null;
 		float f = 1.0F;
 		List<Entity> list = entity.world.getEntitiesInAABBexcluding(entity,
-				entity.getBoundingBox().expand(lookVec.x * d0, lookVec.y * d0, lookVec.z * d0)
-						.grow((double) f),
-				EntityPredicates.NOT_SPECTATING.and(Entity::canBeCollidedWith));
+			entity.getBoundingBox().expand(lookVec.x * d0, lookVec.y * d0, lookVec.z * d0)
+				.grow((double) f),
+			EntityPredicates.NOT_SPECTATING.and(Entity::canBeCollidedWith));
 		double d2 = d1;
 
 		for (Entity e : list) {
@@ -86,8 +86,8 @@ public final class Utils {
 
 	public static CompoundNBT getNBTForPos(EditPosKey k, MinecraftServer server) {
 		ServerWorld world = DimensionManager.getWorld(server, Objects.requireNonNull(DimensionType.getById(k.dim)),
-				false, false);
-		if (world==null) {
+			false, false);
+		if (world == null) {
 			return null;
 		}
 		switch (k.type) {
@@ -107,7 +107,7 @@ public final class Utils {
 				break;
 			case HAND:
 				ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUUID(k.player);
-				if (player==null) {
+				if (player == null) {
 					return null;
 				}
 				ItemStack stack = player.getHeldItem(k.hand);
@@ -119,8 +119,8 @@ public final class Utils {
 
 	public static void setNBTAtPos(EditPosKey k, CompoundNBT newNbt, MinecraftServer server) {
 		ServerWorld world = DimensionManager.getWorld(server, Objects.requireNonNull(DimensionType.getById(k.dim)),
-				false, false);
-		if (world!=null) {
+			false, false);
+		if (world != null) {
 			switch (k.type) {
 				case ENTITY:
 					Entity e = world.getEntityByUuid(k.entity);
@@ -137,13 +137,13 @@ public final class Utils {
 						BlockState newState = world.getBlockState(k.tilePos);
 						world.notifyBlockUpdate(k.tilePos, state, state, 3);
 						world.notifyNeighborsOfStateChange(k.tilePos, newState.getBlock());
-						NBTEdit.packetHandler.send(PacketDistributor.TRACKING_CHUNK.with(()->world.getChunkAt(k.tilePos)),
+						NBTEdit.packetHandler.send(PacketDistributor.TRACKING_CHUNK.with(() -> world.getChunkAt(k.tilePos)),
 							new MessageBlockUpdate(k.tilePos));
 					}
 					break;
 				case HAND:
 					ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer()
-							.getPlayerList().getPlayerByUUID(k.player);
+						.getPlayerList().getPlayerByUUID(k.player);
 					ItemStack stack = ItemStack.read(newNbt);
 					player.setHeldItem(k.hand, stack);
 			}

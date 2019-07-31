@@ -65,7 +65,7 @@ public class NBTFrame extends JFrame {
 	public void pullNbt() {
 		provider.requestNBT(editPos, (nbt) -> {
 			nbtRoot = nbt;
-			lastSynced = nbtRoot!=null?nbtRoot.copy():null;
+			lastSynced = nbtRoot != null ? nbtRoot.copy() : null;
 			SwingUtilities.invokeLater(this::updateNbt);
 		});
 	}
@@ -102,17 +102,17 @@ public class NBTFrame extends JFrame {
 		JMenuItem i = new JMenuItem("Load");
 		i.setToolTipText("Load .nbt file to internal clipboard");
 		i.addActionListener((a) ->
-				loadFileToClipboard());
+			loadFileToClipboard());
 		menu.add(i);
 		i = new JMenuItem("Save");
 		i.setToolTipText("Save internal clipboard to .nbt file");
 		i.addActionListener((a) ->
-				saveClipboardToFile());
+			saveClipboardToFile());
 		menu.add(i);
 		i = new JMenuItem("Delete");
 		i.setToolTipText("Delete entry in the internal clipboard");
 		i.addActionListener((a) ->
-				deleteClipboardEntry());
+			deleteClipboardEntry());
 		menu.add(i);
 
 		bar.add(menu);
@@ -162,7 +162,7 @@ public class NBTFrame extends JFrame {
 											 JScrollPane scroll) {
 		Map<String, TreePath> destMap = new HashMap<>();
 		buildMap((TreeNode) dest.getModel().getRoot(), null, destMap);
-		if (expanded!=null) {
+		if (expanded != null) {
 			while (expanded.hasMoreElements()) {
 				TreePath curr = expanded.nextElement();
 				TreePath dstVersion = destMap.get(stringFromPath(curr));
@@ -348,7 +348,7 @@ public class NBTFrame extends JFrame {
 					into.put(name, nbt);
 				}
 			} else if (base instanceof ListNBT) {
-				((ListNBT)base).add(nbt);
+				((ListNBT) base).add(nbt);
 			}
 			updateNbt();
 		}
@@ -472,19 +472,19 @@ public class NBTFrame extends JFrame {
 		JPopupMenu ret = new JPopupMenu();
 		JMenuItem m = ret.add("Delete tag");
 		m.addActionListener((a) ->
-				delete(tp));
+			delete(tp));
 		m = ret.add("Copy tag");
 		m.addActionListener((a) ->
-				copy(tp));
+			copy(tp));
 		if (nbt instanceof CompoundNBT || nbt instanceof ListNBT) {
 			m = ret.add("Paste tag");
 			m.addActionListener((a) ->
-					paste(tp));
+				paste(tp));
 		}
 		if (nbt instanceof CompoundNBT) {
 			m = ret.add("Write tag to file");
 			m.addActionListener((a) ->
-					writeTag((CompoundNBT) nbt));
+				writeTag((CompoundNBT) nbt));
 			ret.addSeparator();
 			for (int i = 1; i < INBT.NBT_TYPES.length; i++) {
 				addAddOption(ret, i, nbt);
@@ -521,62 +521,62 @@ public class NBTFrame extends JFrame {
 			case NBT.TAG_BYTE:
 				m = ret.add("Add byte");
 				m.addActionListener((a) ->
-						set.accept(new ByteNBT((byte) 0)));
+					set.accept(new ByteNBT((byte) 0)));
 				break;
 			case NBT.TAG_SHORT:
 				m = ret.add("Add short");
 				m.addActionListener((a) ->
-						set.accept(new ShortNBT()));
+					set.accept(new ShortNBT()));
 				break;
 			case NBT.TAG_INT:
 				m = ret.add("Add int");
 				m.addActionListener((a) ->
-						set.accept(new IntNBT(0)));
+					set.accept(new IntNBT(0)));
 				break;
 			case NBT.TAG_LONG:
 				m = ret.add("Add long");
 				m.addActionListener((a) ->
-						set.accept(new LongNBT(0)));
+					set.accept(new LongNBT(0)));
 				break;
 			case NBT.TAG_FLOAT:
 				m = ret.add("Add float");
 				m.addActionListener((a) ->
-						set.accept(new FloatNBT(0)));
+					set.accept(new FloatNBT(0)));
 				break;
 			case NBT.TAG_DOUBLE:
 				m = ret.add("Add double");
 				m.addActionListener((a) ->
-						set.accept(new DoubleNBT(0)));
+					set.accept(new DoubleNBT(0)));
 				break;
 			case NBT.TAG_BYTE_ARRAY:
 				m = ret.add("Add byte[]");
 				m.addActionListener((a) ->
-						set.accept(new ByteArrayNBT(new byte[]{1, 1, 2, 3, 5, 8})));
+					set.accept(new ByteArrayNBT(new byte[]{1, 1, 2, 3, 5, 8})));
 				break;
 			case NBT.TAG_STRING:
 				m = ret.add("Add String");
 				m.addActionListener((a) ->
-						set.accept(new StringNBT("")));
+					set.accept(new StringNBT("")));
 				break;
 			case NBT.TAG_LIST:
 				m = ret.add("Add ListNBT");
 				m.addActionListener((a) ->
-						set.accept(new ListNBT()));
+					set.accept(new ListNBT()));
 				break;
 			case NBT.TAG_COMPOUND:
 				m = ret.add("Add CompoundNBT");
 				m.addActionListener((a) ->
-						set.accept(new CompoundNBT()));
+					set.accept(new CompoundNBT()));
 				break;
 			case NBT.TAG_INT_ARRAY:
 				m = ret.add("Add int[]");
 				m.addActionListener((a) ->
-						set.accept(new IntArrayNBT(new int[]{1, 2, 3, 4, 5, 6})));
+					set.accept(new IntArrayNBT(new int[]{1, 2, 3, 4, 5, 6})));
 				break;
 			case NBT.TAG_LONG_ARRAY:
 				m = ret.add("Add long[]");
 				m.addActionListener((a) ->
-						set.accept(new LongArrayNBT(new long[]{1, 2, 3, 4, 5, 6})));
+					set.accept(new LongArrayNBT(new long[]{1, 2, 3, 4, 5, 6})));
 				break;
 		}
 	}

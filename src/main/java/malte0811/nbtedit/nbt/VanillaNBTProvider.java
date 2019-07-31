@@ -33,21 +33,21 @@ public class VanillaNBTProvider implements INBTEditingProvider {
 	private void generateDiff(CompoundNBT curr, CompoundNBT old, Consumer<String> remove, CompoundNBT add) {
 		Set<String> keys = new HashSet<>(curr.keySet());
 		keys.addAll(old.keySet());
-		for (String key:keys) {
+		for (String key : keys) {
 			if (curr.contains(key)) {
 				if (old.contains(key)) {
 					INBT oldTag = old.get(key);
 					INBT newTag = curr.get(key);
-					assert(oldTag!=null && newTag!=null);
-					if (oldTag.getId()!=newTag.getId()) {
+					assert (oldTag != null && newTag != null);
+					if (oldTag.getId() != newTag.getId()) {
 						add.put(key, newTag);
 					} else {
 						byte i = oldTag.getId();
 						if (i == Constants.NBT.TAG_COMPOUND) {
 							CompoundNBT subDiff = new CompoundNBT();
 							generateDiff((CompoundNBT) newTag, (CompoundNBT) oldTag,
-									k -> remove.accept(key+"."+k),
-									subDiff);
+								k -> remove.accept(key + "." + k),
+								subDiff);
 							if (!subDiff.isEmpty()) {
 								add.put(key, subDiff);
 							}
@@ -59,7 +59,7 @@ public class VanillaNBTProvider implements INBTEditingProvider {
 					add.put(key, curr.get(key));
 				}
 			} else {
-				remove.accept("\""+key+"\"");
+				remove.accept("\"" + key + "\"");
 			}
 		}
 	}
@@ -74,12 +74,12 @@ public class VanillaNBTProvider implements INBTEditingProvider {
 			//TODO position/reference
 			type = "entity";
 		}
-		String mergeCommand = "/data merge "+type+" ";
-		String removeCommand = "/data remove "+type+" ";
-		generateDiff(newNbt, lastKnown, (rem)->
-				Minecraft.getInstance().player.sendChatMessage(removeCommand+rem), added);
+		String mergeCommand = "/data merge " + type + " ";
+		String removeCommand = "/data remove " + type + " ";
+		generateDiff(newNbt, lastKnown, (rem) ->
+			Minecraft.getInstance().player.sendChatMessage(removeCommand + rem), added);
 		if (!added.isEmpty()) {
-			Minecraft.getInstance().player.sendChatMessage(mergeCommand+added);
+			Minecraft.getInstance().player.sendChatMessage(mergeCommand + added);
 		}
 	}
 
@@ -89,7 +89,7 @@ public class VanillaNBTProvider implements INBTEditingProvider {
 		switch (k.type) {
 			case TILEENTITY:
 				Minecraft.getInstance().player.sendChatMessage("/data get block " + k.tilePos.getX() + " " + k.tilePos.getY() + " "
-						+ k.tilePos.getZ());
+					+ k.tilePos.getZ());
 				break;
 			case ENTITY:
 				Minecraft.getInstance().player.sendChatMessage("/data get entity " + k.entity);
@@ -105,11 +105,12 @@ public class VanillaNBTProvider implements INBTEditingProvider {
 
 	private static String getText(ITextComponent source) {
 		StringBuilder ret = new StringBuilder(source.getUnformattedComponentText());
-		for (ITextComponent sibling:source.getSiblings()) {
+		for (ITextComponent sibling : source.getSiblings()) {
 			ret.append(getText(sibling));
 		}
 		return ret.toString();
 	}
+
 	//"commands.data.block.query"
 	//"commands.data.entity.query"
 	@SubscribeEvent

@@ -27,12 +27,12 @@ public class NBTEdit {
 	@SuppressWarnings("WeakerAccess")
 	public static final String VERSION = "$version";
 	public static final SimpleChannel packetHandler = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, "network"),
-			()->VERSION, s->true, s->true);
+		() -> VERSION, s -> true, s -> true);
 	public static CommonProxy proxy = new CommonProxy();
 	public static Logger logger;
 
 	public NBTEdit() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::init);
 	}
 
@@ -45,13 +45,13 @@ public class NBTEdit {
 		logger = LogManager.getLogger(MODID);
 		int id = 0;
 		packetHandler.registerMessage(id++, MessageNBTSync.class, MessageNBTSync::toBytes,
-				MessageNBTSync::new, MessageNBTSync::onMessage);
+			MessageNBTSync::new, MessageNBTSync::onMessage);
 		packetHandler.registerMessage(id++, MessagePushNBT.class, MessagePushNBT::toBytes,
-				MessagePushNBT::new, MessagePushNBT::onMessage);
+			MessagePushNBT::new, MessagePushNBT::onMessage);
 		packetHandler.registerMessage(id++, MessageRequestNBT.class, MessageRequestNBT::toBytes,
-				MessageRequestNBT::new, MessageRequestNBT::onMessage);
+			MessageRequestNBT::new, MessageRequestNBT::onMessage);
 		packetHandler.registerMessage(id++, MessageBlockUpdate.class, MessageBlockUpdate::toBytes,
-				MessageBlockUpdate::new, MessageBlockUpdate::onMessage);
+			MessageBlockUpdate::new, MessageBlockUpdate::onMessage);
 		packetHandler.registerMessage(id++, MessageOpenWindow.class, MessageOpenWindow::toBytes,
 			MessageOpenWindow::new, MessageOpenWindow::onMessage);
 		if (FMLEnvironment.dist == Dist.CLIENT) {

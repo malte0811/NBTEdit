@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraft.network.PacketBuffer;
+
 import java.util.function.Supplier;
 
 public class MessageNBTSync {

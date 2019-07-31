@@ -1,6 +1,8 @@
 package malte0811.nbtedit.util;
 
+import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.nbt.EditPosKey;
+import malte0811.nbtedit.network.MessageBlockUpdate;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -15,6 +17,7 @@ import net.minecraft.world.ServerWorld;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.lang.reflect.Method;
@@ -29,7 +32,8 @@ public final class Utils {
 		Vec3d eyePos = entity.getPositionVector().add(0, entity.getEyeHeight(), 0);
 		Vec3d Vec3d1 = entity.getLook(1);
 		Vec3d Vec3d2 = eyePos.add(Vec3d1.x * d0, Vec3d1.y * d0, Vec3d1.z * d0);
-		RayTraceResult block = entity.world.rayTraceBlocks(new RayTraceContext(eyePos, Vec3d2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity));
+		RayTraceResult block = entity.world.rayTraceBlocks(new RayTraceContext(eyePos, Vec3d2, RayTraceContext.BlockMode.OUTLINE,
+			RayTraceContext.FluidMode.NONE, entity));
 		double d1 = block.getType()==Type.BLOCK ? block.getHitVec().distanceTo(eyePos)
 				: Double.MAX_VALUE;
 		Vec3d lookVec = entity.getLook(1);
@@ -133,9 +137,8 @@ public final class Utils {
 						BlockState newState = world.getBlockState(k.tilePos);
 						world.notifyBlockUpdate(k.tilePos, state, state, 3);
 						world.notifyNeighborsOfStateChange(k.tilePos, newState.getBlock());
-					/*TODO NBTEdit.packetHandler.sendToAllTracking(new MessageBlockUpdate(k.tilePos),
-							new NetworkRegistry.TargetPoint(w.provider.getDimension(),
-									k.tilePos.getX(), k.tilePos.getY(), k.tilePos.getZ(), 0));*/
+						NBTEdit.packetHandler.send(PacketDistributor.TRACKING_CHUNK.with(()->world.getChunkAt(k.tilePos)),
+							new MessageBlockUpdate(k.tilePos));
 					}
 					break;
 				case HAND:
@@ -144,17 +147,6 @@ public final class Utils {
 					ItemStack stack = ItemStack.read(newNbt);
 					player.setHeldItem(k.hand, stack);
 			}
-		}
-	}
-
-	private static Method getNetworkManager = null;
-	static {
-		try {
-			Class<NetworkEvent.Context> clss = NetworkEvent.Context.class;
-			getNetworkManager = clss.getDeclaredMethod("getNetworkManager");
-			getNetworkManager.setAccessible(true);
-		} catch (Exception x) {
-			x.printStackTrace();
 		}
 	}
 }

@@ -24,5 +24,6 @@ public class MessageBlockUpdate {
 
 	public void onMessage(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> Minecraft.getInstance().world.markForRerender(pos));
+		ctx.get().setPacketHandled(true);
 	}
 }

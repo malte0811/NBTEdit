@@ -34,8 +34,8 @@ public class MessageNBTSync {
 		}
 	}
 
-	//TODO figure out side safety for the new system!
 	public void onMessage(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> NBTEdit.proxy.cache(pos, value));
+		ctx.get().setPacketHandled(true);
 	}
 }

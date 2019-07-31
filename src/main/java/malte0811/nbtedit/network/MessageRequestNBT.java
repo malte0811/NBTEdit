@@ -41,5 +41,6 @@ public class MessageRequestNBT {
 						" tried to request NBT data from the server but isn't permitted to do so!");
 			}
 		});
+		ctx.get().setPacketHandled(true);
 	}
 }

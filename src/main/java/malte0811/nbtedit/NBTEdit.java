@@ -1,34 +1,27 @@
 package malte0811.nbtedit;
 
-import malte0811.nbtedit.client.ClientEventHandler;
 import malte0811.nbtedit.client.NBTClipboard;
 import malte0811.nbtedit.command.CommandNbtEdit;
-import malte0811.nbtedit.nbt.CommonProxy;
 import malte0811.nbtedit.nbt.ClientProxy;
-import malte0811.nbtedit.network.MessageBlockUpdate;
-import malte0811.nbtedit.network.MessageNBTSync;
-import malte0811.nbtedit.network.MessagePushNBT;
-import malte0811.nbtedit.network.MessageRequestNBT;
+import malte0811.nbtedit.nbt.CommonProxy;
+import malte0811.nbtedit.network.*;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.SidedProvider;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import java.util.Map;
-import java.awt.GraphicsEnvironment;
+import org.apache.logging.log4j.Logger;
 
 
 @Mod(NBTEdit.MODID)
+@Mod.EventBusSubscriber
 public class NBTEdit {
 	public static final String MODID = "nbtedit";
 	@SuppressWarnings("WeakerAccess")
@@ -45,12 +38,11 @@ public class NBTEdit {
 
 	public void clientInit(FMLClientSetupEvent event) {
 		proxy = new ClientProxy();
+		System.setProperty("java.awt.headless", "false");
 	}
 
 	public void init(FMLCommonSetupEvent event) {
 		logger = LogManager.getLogger(MODID);
-		//TODO remove this or figure it out
-		System.setProperty("java.awt.headless", "false");
 		int id = 0;
 		packetHandler.registerMessage(id++, MessageNBTSync.class, MessageNBTSync::toBytes,
 				MessageNBTSync::new, MessageNBTSync::onMessage);
@@ -60,18 +52,17 @@ public class NBTEdit {
 				MessageRequestNBT::new, MessageRequestNBT::onMessage);
 		packetHandler.registerMessage(id++, MessageBlockUpdate.class, MessageBlockUpdate::toBytes,
 				MessageBlockUpdate::new, MessageBlockUpdate::onMessage);
+		packetHandler.registerMessage(id++, MessageOpenWindow.class, MessageOpenWindow::toBytes,
+			MessageOpenWindow::new, MessageOpenWindow::onMessage);
 		if (FMLEnvironment.dist == Dist.CLIENT) {
 			NBTClipboard.readFromDisc();
 			Compat.registerHandlers();
 		}
+		CommandNbtEdit.registerSerializers();
 	}
-/*TODO get this working again!
-	@NetworkCheckHandler
-	@OnlyIn(Dist.CLIENT)
-	public boolean checkModLists(Map<String, String> modList, Side side) {
 
-		logger.info(modList+", "+modList.containsKey(MODID));//TODO disable NBTEdit/Proxy provider if NBTEdit isn't installed on the server
-		return true;
+	@SubscribeEvent
+	public static void serverStarted(FMLServerStartingEvent ev) {
+		CommandNbtEdit.register(ev.getCommandDispatcher());
 	}
-	*/
 }

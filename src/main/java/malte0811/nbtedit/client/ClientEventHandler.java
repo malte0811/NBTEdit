@@ -30,9 +30,4 @@ public class ClientEventHandler {
 			}
 		}
 	}
-
-	@SubscribeEvent
-	public static void serverStarted(FMLServerStartingEvent ev) {
-		CommandNbtEdit.register(ev.getCommandDispatcher());
-	}
 }

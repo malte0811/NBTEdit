@@ -3,6 +3,8 @@ package malte0811.nbtedit.nbt;
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.network.MessagePushNBT;
 import malte0811.nbtedit.network.MessageRequestNBT;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -43,5 +45,10 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public Set<AutoPullConfig> getAutoPulls() {
 		return autoPulls;
+	}
+
+	@Override
+	public void openNBTWindow() {
+		Minecraft.getInstance().displayGuiScreen(new ChatScreen(""));
 	}
 }

@@ -42,5 +42,6 @@ public class MessagePushNBT {
 				}
 			});
 		}
+		ctx.setPacketHandled(true);
 	}
 }

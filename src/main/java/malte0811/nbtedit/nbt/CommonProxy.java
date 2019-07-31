@@ -29,4 +29,8 @@ public class CommonProxy implements INBTEditingProvider {
 	public Set<AutoPullConfig> getAutoPulls() {
 		return new HashSet<>();
 	}
+
+	public void openNBTWindow() {
+
+	}
 }

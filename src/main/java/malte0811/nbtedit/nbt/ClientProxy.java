@@ -3,8 +3,8 @@ package malte0811.nbtedit.nbt;
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.network.MessagePushNBT;
 import malte0811.nbtedit.network.MessageRequestNBT;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -16,31 +16,25 @@ import java.util.function.Consumer;
 
 public class ClientProxy extends CommonProxy {
 	private final Set<AutoPullConfig> autoPulls = Collections.newSetFromMap(new ConcurrentHashMap<>());
-	private final Map<EditPosKey, NBTTagCompound> cache = new ConcurrentHashMap<>();
-	private final Map<EditPosKey, Consumer<NBTTagCompound>> WAITING = new HashMap<>();
+	private final Map<EditPosKey, Consumer<CompoundNBT>> WAITING = new HashMap<>();
 
-	@Override
-	public void requestNBT(EditPosKey k, boolean sync, @Nonnull Consumer<NBTTagCompound> out) {
-		if (sync) {
-			NBTEdit.packetHandler.sendToServer(new MessageRequestNBT(k));
-			WAITING.put(k, out);
-		} else {
-			out.accept(cache.get(k));
-		}
+	public ClientProxy() {
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(VanillaNBTProvider::clientChatEvent);
 	}
 
 	@Override
-	public void setNBT(EditPosKey k, NBTTagCompound newNbt) {
+	public void requestNBT(EditPosKey k, @Nonnull Consumer<CompoundNBT> out) {
+		NBTEdit.packetHandler.sendToServer(new MessageRequestNBT(k));
+		WAITING.put(k, out);
+	}
+
+	@Override
+	public void setNBT(EditPosKey k, CompoundNBT newNbt, CompoundNBT lastKnown) {
 		NBTEdit.packetHandler.sendToServer(new MessagePushNBT(k, newNbt));
 	}
 
 	@Override
-	public void cache(EditPosKey pos, NBTTagCompound nbt) {
-		if (nbt != null) {
-			cache.put(pos, nbt);
-		} else {
-			cache.remove(pos);
-		}
+	public void cache(EditPosKey pos, CompoundNBT nbt) {
 		if (WAITING.containsKey(pos)) {
 			WAITING.remove(pos).accept(nbt);
 		}
@@ -49,9 +43,5 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public Set<AutoPullConfig> getAutoPulls() {
 		return autoPulls;
-	}
-
-	public void registerClientCommands() {
-		ClientCommandHandler.instance.registerCommand(NBTEdit.editNbt);
 	}
 }

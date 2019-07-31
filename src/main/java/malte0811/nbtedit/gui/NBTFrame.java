@@ -3,15 +3,17 @@ package malte0811.nbtedit.gui;
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.api.API;
 import malte0811.nbtedit.api.IEditHandler;
+import malte0811.nbtedit.api.INBTEditingProvider;
 import malte0811.nbtedit.client.NBTClipboard;
-import malte0811.nbtedit.nbt.AutoPullConfig;
-import malte0811.nbtedit.nbt.EditPosKey;
-import malte0811.nbtedit.nbt.NBTUtils;
+import malte0811.nbtedit.nbt.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.Constants.NBT;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
@@ -27,11 +29,14 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class NBTFrame extends JFrame {
 	private static final long serialVersionUID = -8001779180003715111L;
 	public final EditPosKey editPos;
-	private NBTTagCompound nbtRoot;
+	private CompoundNBT nbtRoot;
+	private CompoundNBT lastSynced;
 	private JTree tree;
 	private JScrollPane scroll;
 	private final JButton push = new JButton("Push NBT to world");
@@ -39,6 +44,8 @@ public class NBTFrame extends JFrame {
 	private final JButton autoPull = new JButton("Enable auto pulling");
 	private final JPanel panel = new JPanel();
 	private JMenuBar bar;
+	//TODO choosing from GUI
+	private INBTEditingProvider provider = NBTEdit.proxy;//new VanillaNBTProvider();//
 
 	public NBTFrame(EditPosKey pos) {
 		super("NBTEdit");
@@ -49,20 +56,22 @@ public class NBTFrame extends JFrame {
 		push.addActionListener(e -> pushNbt());
 		pull.addActionListener(e -> pullNbt());
 		autoPull.addActionListener(e -> setupAutoPull());
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		addWindowListener(new CloseListener());
 		setSize(500, 500);
 		setVisible(true);
 	}
 
 	public void pullNbt() {
-		NBTEdit.proxy.requestNBT(editPos, true, (nbt) -> {
+		provider.requestNBT(editPos, (nbt) -> {
 			nbtRoot = nbt;
+			lastSynced = nbtRoot!=null?nbtRoot.copy():null;
 			SwingUtilities.invokeLater(this::updateNbt);
 		});
 	}
 
 	private void initGUI() {
-		tree = new JTree(new DefaultMutableTreeNode(new ImmutablePair<>("nbtroot", new NBTTagCompound())));
+		tree = new JTree(new DefaultMutableTreeNode(new ImmutablePair<>("nbtroot", new CompoundNBT())));
 		tree.setCellRenderer(new NBTTreeCellRenderer());
 
 		GroupLayout gl = new GroupLayout(panel);
@@ -129,8 +138,7 @@ public class NBTFrame extends JFrame {
 		Enumeration<TreePath> expanded = tree.getExpandedDescendants(new TreePath(model.getRoot()));
 		TreePath selected = tree.getSelectionPath();
 		model.setRoot(node);
-		if (expanded != null)
-			updateExpansionAndSelection(expanded, selected, tree, scroll);
+		updateExpansionAndSelection(expanded, selected, tree, scroll);
 
 		IEditHandler h = API.get(nbtRoot);
 		if (h != null) {
@@ -150,14 +158,17 @@ public class NBTFrame extends JFrame {
 		this.repaint();
 	}
 
-	private void updateExpansionAndSelection(Enumeration<TreePath> expanded, TreePath selected, JTree dest, JScrollPane scroll) {
+	private void updateExpansionAndSelection(@Nullable Enumeration<TreePath> expanded, TreePath selected, JTree dest,
+											 JScrollPane scroll) {
 		Map<String, TreePath> destMap = new HashMap<>();
 		buildMap((TreeNode) dest.getModel().getRoot(), null, destMap);
-		while (expanded.hasMoreElements()) {
-			TreePath curr = expanded.nextElement();
-			TreePath dstVersion = destMap.get(stringFromPath(curr));
-			if (dstVersion != null) {
-				dest.expandPath(dstVersion);
+		if (expanded!=null) {
+			while (expanded.hasMoreElements()) {
+				TreePath curr = expanded.nextElement();
+				TreePath dstVersion = destMap.get(stringFromPath(curr));
+				if (dstVersion != null) {
+					dest.expandPath(dstVersion);
+				}
 			}
 		}
 		if (selected != null) {
@@ -191,26 +202,26 @@ public class NBTFrame extends JFrame {
 		return ret.toString();
 	}
 
-	private DefaultMutableTreeNode genTreeFromNbt(NBTTagCompound nbt) {
+	private DefaultMutableTreeNode genTreeFromNbt(CompoundNBT nbt) {
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode(new ImmutablePair<>("nbtroot", nbt));
-		for (String k : nbt.getKeySet()) {
-			NBTBase b = nbt.getTag(k);
+		for (String k : nbt.keySet()) {
+			INBT b = nbt.get(k);
 			root.add(getNodeForBase(b, k));
 		}
 		return root;
 	}
 
-	private MutableTreeNode getNodeForBase(NBTBase nbt, String key) {
-		String type = NBTBase.NBT_TYPES[nbt.getId()];
+	private MutableTreeNode getNodeForBase(INBT nbt, String key) {
+		String type = INBT.NBT_TYPES[nbt.getId()];
 		switch (type) {
 			case "COMPOUND":
-				MutableTreeNode sub = genTreeFromNbt((NBTTagCompound) nbt);
+				MutableTreeNode sub = genTreeFromNbt((CompoundNBT) nbt);
 				sub.setUserObject(new ImmutablePair<>(key, nbt));
 				return sub;
 			case "LIST":
 				DefaultMutableTreeNode list = new DefaultMutableTreeNode(new ImmutablePair<>(key, nbt));
-				NBTTagList l = (NBTTagList) nbt;
-				for (int i = 0; i < l.tagCount(); i++) {
+				ListNBT l = (ListNBT) nbt;
+				for (int i = 0; i < l.size(); i++) {
 					list.add(getNodeForBase(l.get(i), Integer.toString(i)));
 				}
 				return list;
@@ -249,19 +260,19 @@ public class NBTFrame extends JFrame {
 	private void edit(TreePath path) {
 		if (path == null)
 			return;
-		NBTBase[] state = {nbtRoot, null};
+		INBT[] state = {nbtRoot, null};
 		String key = findNbtInTree(path, state);
-		NBTBase end = state[0];
-		NBTBase parent = state[1];
+		INBT end = state[0];
+		INBT parent = state[1];
 		String init = NBTUtils.nbtToString(end);
 		if (init != null) {
 			String ret = JOptionPane.showInputDialog(this, "Please enter the new value", init);
-			NBTBase nbtNew = NBTUtils.stringToNbt(ret, end);
+			INBT nbtNew = NBTUtils.stringToNbt(ret, end);
 			if (nbtNew != null) {
-				if (parent instanceof NBTTagCompound) {
-					((NBTTagCompound) parent).setTag(key, nbtNew);
+				if (parent instanceof CompoundNBT) {
+					((CompoundNBT) parent).put(key, nbtNew);
 				} else if (parent != null) {
-					((NBTTagList) parent).set(Integer.parseInt(key), nbtNew);
+					((ListNBT) parent).set(Integer.parseInt(key), nbtNew);
 				}
 				updateNbt();
 			} else {
@@ -270,51 +281,51 @@ public class NBTFrame extends JFrame {
 		}
 	}
 
-	private String findNbtInTree(TreePath path, NBTBase[] state) {
+	private String findNbtInTree(TreePath path, INBT[] state) {
 		String key = null;
 		for (int i = 1; i < path.getPathCount(); i++) {
 			key = stringFromObject(path.getPathComponent(i));
-			if (state[0] instanceof NBTTagCompound) {
+			if (state[0] instanceof CompoundNBT) {
 				state[1] = state[0];
-				state[0] = ((NBTTagCompound) state[0]).getTag(key);
-			} else if (state[0] instanceof NBTTagList) {
+				state[0] = ((CompoundNBT) state[0]).get(key);
+			} else if (state[0] instanceof ListNBT) {
 				state[1] = state[0];
-				state[0] = ((NBTTagList) state[0]).get(Integer.parseInt(key));
+				state[0] = ((ListNBT) state[0]).get(Integer.parseInt(key));
 			}
 		}
 		return key;
 	}
 
-	private NBTBase get(TreePath t) {
+	private INBT get(TreePath t) {
 		if (t == null)
 			return null;
-		NBTBase curr = nbtRoot;
+		INBT curr = nbtRoot;
 		String key;
 		for (int i = 1; i < t.getPathCount(); i++) {
 			key = stringFromObject(t.getPathComponent(i));
-			if (curr instanceof NBTTagCompound) {
-				curr = ((NBTTagCompound) curr).getTag(key);
-			} else if (curr instanceof NBTTagList) {
-				curr = ((NBTTagList) curr).get(Integer.parseInt(key));
+			if (curr instanceof CompoundNBT) {
+				curr = ((CompoundNBT) curr).get(key);
+			} else if (curr instanceof ListNBT) {
+				curr = ((ListNBT) curr).get(Integer.parseInt(key));
 			}
 		}
 		return curr;
 	}
 
 	private void delete(TreePath path) {
-		NBTBase[] state = {nbtRoot, null};
+		INBT[] state = {nbtRoot, null};
 		String key = findNbtInTree(path, state);
-		NBTBase parent = state[1];
-		if (parent instanceof NBTTagCompound) {
-			((NBTTagCompound) parent).removeTag(key);
-		} else if (parent instanceof NBTTagList) {
-			((NBTTagList) parent).removeTag(Integer.parseInt(key));
+		INBT parent = state[1];
+		if (parent instanceof CompoundNBT) {
+			((CompoundNBT) parent).remove(key);
+		} else if (parent instanceof ListNBT) {
+			((ListNBT) parent).remove(Integer.parseInt(key));
 		}
 		updateNbt();
 	}
 
 	private void copy(TreePath t) {
-		NBTBase nbt = get(t);
+		INBT nbt = get(t);
 		String name = JOptionPane.showInputDialog(this, "Name for this tag: ");
 		if (name != null) {
 			NBTClipboard.saveToClipboard(nbt, name);
@@ -322,24 +333,29 @@ public class NBTFrame extends JFrame {
 	}
 
 	private void paste(TreePath t) {
-		Map<String, NBTBase> map = NBTClipboard.getContent();
+		Map<String, INBT> map = NBTClipboard.getContent();
 		if (map.size() == 0) {
 			JOptionPane.showMessageDialog(this, "No clipboard entries found!");
 		} else {
 			String[] keys = map.keySet().toArray(new String[0]);
 			String sel = (String) JOptionPane.showInputDialog(this, "Select which tag to paste: ", "", JOptionPane.INFORMATION_MESSAGE, null, keys, keys[0]);
-			NBTBase nbt = map.get(sel);
-			NBTTagCompound into = (NBTTagCompound) get(t);
-			String name = JOptionPane.showInputDialog(this, "Select the name for the new tag: ");
-			if (name != null) {
-				into.setTag(name, nbt);
-				updateNbt();
+			INBT nbt = map.get(sel).copy();
+			INBT base = get(t);
+			if (base instanceof CompoundNBT) {
+				CompoundNBT into = (CompoundNBT) base;
+				String name = JOptionPane.showInputDialog(this, "Select the name for the new tag: ");
+				if (name != null) {
+					into.put(name, nbt);
+				}
+			} else if (base instanceof ListNBT) {
+				((ListNBT)base).add(nbt);
 			}
+			updateNbt();
 		}
 	}
 
 	private void loadFileToClipboard() {
-		JFileChooser choose = new JFileChooser(Minecraft.getMinecraft().mcDataDir);
+		JFileChooser choose = new JFileChooser(Minecraft.getInstance().gameDir);
 		choose.setFileFilter(new FileFilter() {
 
 			@Override
@@ -356,10 +372,10 @@ public class NBTFrame extends JFrame {
 		if (val == JFileChooser.APPROVE_OPTION) {
 			File in = choose.getSelectedFile();
 			try {
-				NBTTagCompound nbt = NBTUtils.readNBT(new FileInputStream(in));
+				CompoundNBT nbt = NBTUtils.readNBT(new FileInputStream(in));
 				String name = JOptionPane.showInputDialog(this, "Name of the clipboard: ");
 				if (name != null) {
-					NBTClipboard.saveToClipboard(nbt.getTag("content"), name);
+					NBTClipboard.saveToClipboard(nbt.get("content"), name);
 				}
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(this, "Failed to load file. Check the log for details.");
@@ -370,21 +386,21 @@ public class NBTFrame extends JFrame {
 	}
 
 	private void saveClipboardToFile() {
-		Map<String, NBTBase> map = NBTClipboard.getContent();
+		Map<String, INBT> map = NBTClipboard.getContent();
 		if (map.size() == 0) {
 			JOptionPane.showMessageDialog(this, "No clipboard entries found!");
 		} else {
 			String[] keys = map.keySet().toArray(new String[0]);
 			String sel = (String) JOptionPane.showInputDialog(this, "Select which tag to save: ", "", JOptionPane.INFORMATION_MESSAGE, null, keys, keys[0]);
-			NBTBase nbtTmp = map.get(sel);
+			INBT nbtTmp = map.get(sel);
 			String name = JOptionPane.showInputDialog(this, "Name of the file: ");
 			if (name != null) {
 				if (!name.endsWith(".nbt")) {
 					name = name + ".nbt";
 				}
-				NBTTagCompound nbt = new NBTTagCompound();
-				nbt.setTag("content", nbtTmp);
-				File out = new File(Minecraft.getMinecraft().mcDataDir, name);
+				CompoundNBT nbt = new CompoundNBT();
+				nbt.put("content", nbtTmp);
+				File out = new File(Minecraft.getInstance().gameDir, name);
 				try {
 					NBTUtils.writeNBT(nbt, new FileOutputStream(out));
 				} catch (IOException e) {
@@ -396,7 +412,7 @@ public class NBTFrame extends JFrame {
 	}
 
 	private void deleteClipboardEntry() {
-		Map<String, NBTBase> map = NBTClipboard.getContent();
+		Map<String, INBT> map = NBTClipboard.getContent();
 		if (map.size() == 0) {
 			JOptionPane.showMessageDialog(this, "No clipboard entries found!");
 		} else {
@@ -408,13 +424,13 @@ public class NBTFrame extends JFrame {
 		}
 	}
 
-	private void writeTag(NBTTagCompound nbt) {
+	private void writeTag(CompoundNBT nbt) {
 		String name = JOptionPane.showInputDialog(this, "Name of the file: ");
 		if (name != null) {
 			if (!name.endsWith(".nbt")) {
 				name = name + ".nbt";
 			}
-			File out = new File(Minecraft.getMinecraft().mcDataDir, name);
+			File out = new File(Minecraft.getInstance().gameDir, name);
 			try {
 				NBTUtils.writeNBT(nbt, new FileOutputStream(out));
 			} catch (IOException e) {
@@ -450,7 +466,7 @@ public class NBTFrame extends JFrame {
 	}
 
 	private JPopupMenu createMenu(TreePath tp) {
-		NBTBase nbt = get(tp);
+		INBT nbt = get(tp);
 		if (nbt == null)
 			return null;
 		JPopupMenu ret = new JPopupMenu();
@@ -460,22 +476,24 @@ public class NBTFrame extends JFrame {
 		m = ret.add("Copy tag");
 		m.addActionListener((a) ->
 				copy(tp));
-		if (nbt instanceof NBTTagCompound) {
+		if (nbt instanceof CompoundNBT || nbt instanceof ListNBT) {
 			m = ret.add("Paste tag");
 			m.addActionListener((a) ->
 					paste(tp));
+		}
+		if (nbt instanceof CompoundNBT) {
 			m = ret.add("Write tag to file");
 			m.addActionListener((a) ->
-					writeTag((NBTTagCompound) nbt));
+					writeTag((CompoundNBT) nbt));
 			ret.addSeparator();
-			for (int i = 1; i < NBTBase.NBT_TYPES.length; i++) {
+			for (int i = 1; i < INBT.NBT_TYPES.length; i++) {
 				addAddOption(ret, i, nbt);
 			}
-		} else if (nbt instanceof NBTTagList) {
+		} else if (nbt instanceof ListNBT) {
 			ret.addSeparator();
-			int type = ((NBTTagList) nbt).getTagType();
+			int type = ((ListNBT) nbt).getTagType();
 			if (type == 0) {
-				for (int i = 1; i < NBTBase.NBT_TYPES.length; i++) {
+				for (int i = 1; i < INBT.NBT_TYPES.length; i++) {
 					addAddOption(ret, i, nbt);
 				}
 			} else {
@@ -485,184 +503,81 @@ public class NBTFrame extends JFrame {
 		return ret;
 	}
 
-	private void addAddOption(JPopupMenu ret, int id, NBTBase nbt) {
+	private void addAddOption(JPopupMenu ret, int id, INBT nbt) {
 		JMenuItem m;
+		Consumer<INBT> set = element -> {
+			if (nbt instanceof CompoundNBT) {
+				String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
+				if (name != null) {
+					((CompoundNBT) nbt).put(name, element);
+				}
+			} else {
+				assert nbt instanceof ListNBT : "nbt has to be a compound or a list";
+				((ListNBT) nbt).add(element);
+			}
+			updateNbt();
+		};
 		switch (id) {
-			case 1:
+			case NBT.TAG_BYTE:
 				m = ret.add("Add byte");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setByte(name, (byte) 0);
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagByte((byte) 0));
-					}
-					updateNbt();
-				});
+						set.accept(new ByteNBT((byte) 0)));
 				break;
-			case 2:
+			case NBT.TAG_SHORT:
 				m = ret.add("Add short");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setShort(name, (short) 0);
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagShort((short) 0));
-					}
-					updateNbt();
-				});
+						set.accept(new ShortNBT()));
 				break;
-			case 3:
+			case NBT.TAG_INT:
 				m = ret.add("Add int");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setInteger(name, 0);
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagInt(0));
-					}
-					updateNbt();
-				});
+						set.accept(new IntNBT(0)));
 				break;
-			case 4:
+			case NBT.TAG_LONG:
 				m = ret.add("Add long");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setLong(name, 0);
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagLong(0));
-					}
-					updateNbt();
-				});
+						set.accept(new LongNBT(0)));
 				break;
-			case 5:
+			case NBT.TAG_FLOAT:
 				m = ret.add("Add float");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setFloat(name, 0);
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagFloat(0));
-					}
-					updateNbt();
-				});
+						set.accept(new FloatNBT(0)));
 				break;
-			case 6:
+			case NBT.TAG_DOUBLE:
 				m = ret.add("Add double");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setDouble(name, 0);
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagDouble(0));
-					}
-					updateNbt();
-				});
+						set.accept(new DoubleNBT(0)));
 				break;
-			case 7:
+			case NBT.TAG_BYTE_ARRAY:
 				m = ret.add("Add byte[]");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setByteArray(name, new byte[]{1, 1, 2, 3, 5, 8});
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagByteArray(new byte[]{1, 1, 2, 3, 5, 8}));
-					}
-					updateNbt();
-				});
+						set.accept(new ByteArrayNBT(new byte[]{1, 1, 2, 3, 5, 8})));
 				break;
-			case 8:
+			case NBT.TAG_STRING:
 				m = ret.add("Add String");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setString(name, "");
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagString(""));
-					}
-					updateNbt();
-				});
+						set.accept(new StringNBT("")));
 				break;
-			case 9:
-				m = ret.add("Add NBTTagList");
+			case NBT.TAG_LIST:
+				m = ret.add("Add ListNBT");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setTag(name, new NBTTagList());
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagList());
-					}
-					updateNbt();
-				});
+						set.accept(new ListNBT()));
 				break;
-			case 10:
-				m = ret.add("Add NBTTagCompound");
+			case NBT.TAG_COMPOUND:
+				m = ret.add("Add CompoundNBT");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setTag(name, new NBTTagCompound());
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagCompound());
-					}
-					updateNbt();
-				});
+						set.accept(new CompoundNBT()));
 				break;
-			case 11:
+			case NBT.TAG_INT_ARRAY:
 				m = ret.add("Add int[]");
 				m.addActionListener((a) ->
-				{
-					if (nbt instanceof NBTTagCompound) {
-						String name = JOptionPane.showInputDialog(NBTFrame.this, "Name of the new entry:");
-						if (name != null) {
-							((NBTTagCompound) nbt).setIntArray(name, new int[]{1, 1, 2, 3, 5, 8});
-						}
-					} else {
-						assert nbt instanceof NBTTagList : "nbt has to be a compound or a list";
-						((NBTTagList) nbt).appendTag(new NBTTagIntArray(new int[]{1, 1, 2, 3, 5, 8}));
-					}
-					updateNbt();
-				});
+						set.accept(new IntArrayNBT(new int[]{1, 2, 3, 4, 5, 6})));
+				break;
+			case NBT.TAG_LONG_ARRAY:
+				m = ret.add("Add long[]");
+				m.addActionListener((a) ->
+						set.accept(new LongArrayNBT(new long[]{1, 2, 3, 4, 5, 6})));
+				break;
 		}
 	}
 
@@ -678,7 +593,7 @@ public class NBTFrame extends JFrame {
 
 	private void pushNbt() {
 		try {
-			NBTEdit.proxy.setNBT(editPos, nbtRoot);
+			provider.setNBT(editPos, nbtRoot, lastSynced);
 		} catch (RuntimeException x) {
 			x.printStackTrace();
 			JOptionPane.showMessageDialog(NBTFrame.this, x.getMessage(), "Exception!", JOptionPane.ERROR_MESSAGE);

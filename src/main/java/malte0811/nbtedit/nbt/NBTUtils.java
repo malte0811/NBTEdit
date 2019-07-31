@@ -5,6 +5,8 @@ import io.netty.buffer.Unpooled;
 import malte0811.nbtedit.NBTEdit;
 import net.minecraft.nbt.*;
 import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import org.apache.logging.log4j.Level;
 
@@ -17,85 +19,84 @@ import java.util.List;
 import java.util.function.Function;
 
 public class NBTUtils {
-	public static String nbtToString(NBTBase nbt) {
+	public static String nbtToString(INBT nbt) {
 		String ret = null;
-		switch (NBTBase.NBT_TYPES[nbt.getId()]) {//"BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"
-			case "COMPOUND":
-			case "LIST":
+		switch (nbt.getId()) {
+			case NBT.TAG_COMPOUND:
+			case NBT.TAG_LIST:
 				break;
-			case "BYTE":
-				ret = Byte.toString(((NBTTagByte) nbt).getByte());
+			case NBT.TAG_BYTE:
+				ret = Byte.toString(((ByteNBT) nbt).getByte());
 				break;
-			case "SHORT":
-				ret = Short.toString(((NBTTagShort) nbt).getShort());
+			case NBT.TAG_SHORT:
+				ret = Short.toString(((ShortNBT) nbt).getShort());
 				break;
-			case "INT":
-				ret = Integer.toString(((NBTTagInt) nbt).getInt());
+			case NBT.TAG_INT:
+				ret = Integer.toString(((IntNBT) nbt).getInt());
 				break;
-			case "LONG":
-				ret = Long.toString(((NBTTagLong) nbt).getLong());
+			case NBT.TAG_LONG:
+				ret = Long.toString(((LongNBT) nbt).getLong());
 				break;
-			case "FLOAT":
-				ret = Float.toString(((NBTTagFloat) nbt).getFloat());
+			case NBT.TAG_FLOAT:
+				ret = Float.toString(((FloatNBT) nbt).getFloat());
 				break;
-			case "DOUBLE":
-				ret = Double.toString(((NBTTagDouble) nbt).getDouble());
+			case NBT.TAG_DOUBLE:
+				ret = Double.toString(((DoubleNBT) nbt).getDouble());
 				break;
-			case "BYTE[]":
-				ret = Arrays.toString((((NBTTagByteArray) nbt).getByteArray()));
+			case NBT.TAG_BYTE_ARRAY:
+				ret = Arrays.toString((((ByteArrayNBT) nbt).getByteArray()));
 				break;
-			case "STRING":
-				ret = ((NBTTagString) nbt).getString();
+			case NBT.TAG_STRING:
+				ret = nbt.getString();
 				break;
-			case "INT[]":
-				ret = Arrays.toString(((NBTTagIntArray) nbt).getIntArray());
+			case NBT.TAG_INT_ARRAY:
+				ret = Arrays.toString(((IntArrayNBT) nbt).getIntArray());
 				break;
-			case "LONG[]":
-				ret = "Currently not supported!";// TODO Arrays.toString(((NBTTagLongArray) nbt).data);
+			case NBT.TAG_LONG_ARRAY:
+				ret = Arrays.toString(((LongArrayNBT) nbt).getAsLongArray());
 				break;
 		}
 		return ret;
 	}
 
-	public static NBTBase stringToNbt(String in, NBTBase curr) {
+	public static INBT stringToNbt(String in, INBT curr) {
 		if (in == null)
 			return curr;
-		NBTBase ret = null;
+		INBT ret = null;
 		try {
-			//"BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]", "LONG[]"
-			switch (NBTBase.NBT_TYPES[curr.getId()]) {
-				case "COMPOUND":
-				case "LIST":
+			switch (curr.getId()) {
+				case NBT.TAG_COMPOUND:
+				case NBT.TAG_LIST:
 					break;
-				case "BYTE":
-					ret = new NBTTagByte(Byte.parseByte(in));
+				case NBT.TAG_BYTE:
+					ret = new ByteNBT(Byte.parseByte(in));
 					break;
-				case "SHORT":
-					ret = new NBTTagShort(Short.parseShort(in));
+				case NBT.TAG_SHORT:
+					ret = new ShortNBT(Short.parseShort(in));
 					break;
-				case "INT":
-					ret = new NBTTagInt(Integer.parseInt(in));
+				case NBT.TAG_INT:
+					ret = new IntNBT(Integer.parseInt(in));
 					break;
-				case "LONG":
-					ret = new NBTTagLong(Long.parseLong(in));
+				case NBT.TAG_LONG:
+					ret = new LongNBT(Long.parseLong(in));
 					break;
-				case "FLOAT":
-					ret = new NBTTagFloat(Float.parseFloat(in));
+				case NBT.TAG_FLOAT:
+					ret = new FloatNBT(Float.parseFloat(in));
 					break;
-				case "DOUBLE":
-					ret = new NBTTagDouble(Double.parseDouble(in));
+				case NBT.TAG_DOUBLE:
+					ret = new DoubleNBT(Double.parseDouble(in));
 					break;
-				case "BYTE[]":
-					ret = new NBTTagByteArray(stringToArray(in, Byte::parseByte));
+				case NBT.TAG_BYTE_ARRAY:
+					ret = new ByteArrayNBT(stringToArray(in, Byte::parseByte));
 					break;
-				case "STRING":
-					ret = new NBTTagString(in);
+				case NBT.TAG_STRING:
+					ret = new StringNBT(in);
 					break;
-				case "INT[]":
-					ret = new NBTTagIntArray(stringToArray(in, Integer::parseInt));
+				case NBT.TAG_INT_ARRAY:
+					ret = new IntArrayNBT(stringToArray(in, Integer::parseInt));
 					break;
-				case "LONG[]":
-					ret = new NBTTagLongArray(stringToArray(in, Long::parseLong));
+				case NBT.TAG_LONG_ARRAY:
+					ret = new LongArrayNBT(stringToArray(in, Long::parseLong));
 					break;
 
 			}
@@ -115,19 +116,19 @@ public class NBTUtils {
 		return ret;
 	}
 
-	public static void writeNBT(NBTTagCompound nbt, OutputStream out) throws IOException {
+	public static void writeNBT(CompoundNBT nbt, OutputStream out) throws IOException {
 		PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
-		ByteBufUtils.writeTag(buffer, nbt);
+		buffer.writeCompoundTag(nbt);
 		out.write(buffer.array());
 		out.flush();
 	}
 
-	public static NBTTagCompound readNBT(InputStream in) throws IOException {
+	public static CompoundNBT readNBT(InputStream in) throws IOException {
 		int read;
-		ByteBuf bb = new PacketBuffer(Unpooled.buffer());
+		PacketBuffer bb = new PacketBuffer(Unpooled.buffer());
 		while ((read = in.read()) != -1) {
 			bb.writeByte(read);
 		}
-		return ByteBufUtils.readTag(bb);
+		return bb.readCompoundTag();
 	}
 }

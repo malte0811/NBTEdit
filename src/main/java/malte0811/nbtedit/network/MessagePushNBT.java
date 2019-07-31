@@ -1,52 +1,46 @@
 package malte0811.nbtedit.network;
 
-import io.netty.buffer.ByteBuf;
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.nbt.EditPosKey;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import malte0811.nbtedit.util.Utils;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.PacketBuffer;
 
-public class MessagePushNBT implements IMessage {
+import java.util.function.Supplier;
+
+public class MessagePushNBT {
 	private EditPosKey pos;
-	private NBTTagCompound value;
+	private CompoundNBT value;
 
-	public MessagePushNBT(EditPosKey k, NBTTagCompound val) {
+	public MessagePushNBT(EditPosKey k, CompoundNBT val) {
 		pos = k;
 		value = val;
 	}
 
-	public MessagePushNBT() {
-	}
-
-	@Override
-	public void fromBytes(ByteBuf buf) {
+	public MessagePushNBT(PacketBuffer buf) {
 		pos = EditPosKey.fromBytes(buf);
-		value = ByteBufUtils.readTag(buf);
+		value = buf.readCompoundTag();
 	}
 
-	@Override
-	public void toBytes(ByteBuf buf) {
+	public void toBytes(PacketBuffer buf) {
 		pos.toBytes(buf);
-		ByteBufUtils.writeTag(buf, value);
+		buf.writeCompoundTag(value);
 	}
 
-	public static class ServerHandler implements IMessageHandler<MessagePushNBT, IMessage> {
-		@Override
-		public IMessage onMessage(MessagePushNBT msg, MessageContext ctx) {
-			EntityPlayerMP player = ctx.getServerHandler().player;
-			player.getServerWorld().addScheduledTask(() -> {
-				if (NBTEdit.editNbt.checkPermission(player.mcServer, player)) {
-					NBTEdit.commonProxyInstance.setNBT(msg.pos, msg.value);
+	public void onMessage(Supplier<NetworkEvent.Context> ctxSupplier) {
+		NetworkEvent.Context ctx = ctxSupplier.get();
+		ServerPlayerEntity player = ctx.getSender();
+		if (player!=null) {
+			ctx.enqueueWork(() -> {
+				if (player.hasPermissionLevel(2)) {
+					Utils.setNBTAtPos(pos, value, player.server);
 				} else {
-					NBTEdit.logger.error("Player " + player.getDisplayNameString() +
+					NBTEdit.logger.error("Player " + player.getName() +
 							" tried to push NBT data to the server but isn't permitted to do so!");
 				}
 			});
-			return null;
 		}
 	}
 }

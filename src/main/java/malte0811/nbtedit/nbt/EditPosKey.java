@@ -1,91 +1,105 @@
 package malte0811.nbtedit.nbt;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.EnumHand;
+import malte0811.nbtedit.api.ObjectType;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 public class EditPosKey {
+	@Nonnull
 	public final UUID player;
-	public final PosType type;
+	@Nonnull
+	public final ObjectType type;
 	//entity+TE
 	public final int dim;
 	//entity
-	public final Integer ePos;
+	@Nonnull
+	public final UUID entity;
 	//TE
-	public final BlockPos tPos;
+	@Nonnull
+	public final BlockPos tilePos;
 	//hand
-	public final EnumHand hand;
+	@Nonnull
+	public final Hand hand;
 
-	private static final EnumHand[] hands = EnumHand.values();
+	private static final Hand[] HANDS = Hand.values();
 
-	public EditPosKey(UUID p, int dim, int eId) {
+	public EditPosKey(@Nonnull UUID p, int dim, @Nonnull UUID eId) {
 		player = p;
-		ePos = eId;
+		entity = eId;
 		this.dim = dim;
-		tPos = null;
-		type = PosType.ENTITY;
-		hand = EnumHand.MAIN_HAND;
+		tilePos = BlockPos.ZERO;
+		type = ObjectType.ENTITY;
+		hand = Hand.MAIN_HAND;
 	}
 
-	public EditPosKey(UUID p, int dim, BlockPos pos) {
-		player = p;
-		tPos = pos;
+	public EditPosKey(@Nonnull UUID player, int dim) {
+		this.player = player;
+		entity = player;
 		this.dim = dim;
-		ePos = null;
-		type = PosType.TILEENTITY;
-		hand = EnumHand.MAIN_HAND;
+		tilePos = BlockPos.ZERO;
+		type = ObjectType.PLAYER;
+		hand = Hand.MAIN_HAND;
 	}
 
-	public EditPosKey(UUID p, EnumHand h) {
+	public EditPosKey(@Nonnull UUID p, int dim, @Nonnull BlockPos pos) {
 		player = p;
-		tPos = null;
+		tilePos = pos;
+		this.dim = dim;
+		entity = UUID.fromString("00000000-0000-0000-0000-000000000000");
+		type = ObjectType.TILEENTITY;
+		hand = Hand.MAIN_HAND;
+	}
+
+	public EditPosKey(@Nonnull UUID p, @Nonnull Hand h) {
+		player = p;
+		tilePos = BlockPos.ZERO;
 		dim = 0;
-		ePos = null;
-		type = PosType.HAND;
+		entity = UUID.fromString("00000000-0000-0000-0000-000000000000");
+		type = ObjectType.HAND;
 		hand = h;
 	}
 
-	public static EditPosKey fromBytes(ByteBuf buf) {
-		UUID user = UUID.fromString(ByteBufUtils.readUTF8String(buf));
-		int d = buf.readInt();
-		byte t = buf.readByte();
-		PosType type = PosType.values[t];
+	public static EditPosKey fromBytes(PacketBuffer pBuf) {
+		UUID user = UUID.fromString(pBuf.readString(36));
+		int d = pBuf.readInt();
+		byte t = pBuf.readByte();
+		ObjectType type = ObjectType.VALUES[t];
 		switch (type) {
 			case ENTITY:
-				int e = buf.readInt();
+			case PLAYER:
+				UUID e = pBuf.readUniqueId();
 				return new EditPosKey(user, d, e);
 			case TILEENTITY:
-				int x = buf.readInt();
-				int y = buf.readInt();
-				int z = buf.readInt();
-				return new EditPosKey(user, d, new BlockPos(x, y, z));
+				BlockPos pos = pBuf.readBlockPos();
+				return new EditPosKey(user, d, pos);
 			case HAND:
-				byte h = buf.readByte();
-				return new EditPosKey(user, hands[h]);
+				byte h = pBuf.readByte();
+				return new EditPosKey(user, HANDS[h]);
 		}
 		return null;
 	}
 
-	public void toBytes(ByteBuf buf) {
-		ByteBufUtils.writeUTF8String(buf, player.toString());
-		buf.writeInt(dim);
-		buf.writeByte(type.ordinal());
+	public void toBytes(PacketBuffer pBuf) {
+		pBuf.writeString(player.toString());
+		pBuf.writeInt(dim);
+		pBuf.writeByte(type.ordinal());
 		switch (type) {
 			case ENTITY:
 				//entity
-				buf.writeInt(ePos);
+				pBuf.writeUniqueId(entity);
 				break;
 			case TILEENTITY:
 				//tile entity
-				buf.writeInt(tPos.getX());
-				buf.writeInt(tPos.getY());
-				buf.writeInt(tPos.getZ());
+				pBuf.writeBlockPos(tilePos);
 				break;
 			case HAND:
-				buf.writeByte(hand.ordinal());
+				pBuf.writeByte(hand.ordinal());
 		}
 	}
 
@@ -95,9 +109,9 @@ public class EditPosKey {
 		int result = 1;
 		result = prime * result + dim;
 		result = prime * result + type.ordinal();
-		result = prime * result + ((ePos == null) ? 0 : ePos.hashCode());
-		result = prime * result + ((player == null) ? 0 : player.hashCode());
-		result = prime * result + ((tPos == null) ? 0 : tPos.hashCode());
+		result = prime * result + entity.hashCode();
+		result = prime * result + player.hashCode();
+		result = prime * result + tilePos.hashCode();
 		return result;
 	}
 
@@ -115,29 +129,13 @@ public class EditPosKey {
 		}
 		if (dim != other.dim)
 			return false;
-		if (ePos == null) {
-			if (other.ePos != null)
-				return false;
-		} else if (!ePos.equals(other.ePos))
+		if (!entity.equals(other.entity))
 			return false;
-		if (player == null) {
-			if (other.player != null)
-				return false;
-		} else if (!player.equals(other.player))
+		if (!player.equals(other.player))
 			return false;
-		if (tPos == null) {
-			if (other.tPos != null)
-				return false;
-		} else if (!tPos.equals(other.tPos))
+		if (!tilePos.equals(other.tilePos))
 			return false;
 		return true;
 	}
 
-	public static enum PosType {
-		TILEENTITY,
-		ENTITY,
-		HAND;
-		@SuppressWarnings("WeakerAccess")
-		public static final PosType[] values = values();
-	}
 }

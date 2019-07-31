@@ -4,51 +4,74 @@ import malte0811.nbtedit.client.ClientEventHandler;
 import malte0811.nbtedit.client.NBTClipboard;
 import malte0811.nbtedit.command.CommandNbtEdit;
 import malte0811.nbtedit.nbt.CommonProxy;
+import malte0811.nbtedit.nbt.ClientProxy;
 import malte0811.nbtedit.network.MessageBlockUpdate;
 import malte0811.nbtedit.network.MessageNBTSync;
 import malte0811.nbtedit.network.MessagePushNBT;
 import malte0811.nbtedit.network.MessageRequestNBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.SidedProvider;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+import java.util.Map;
+import java.awt.GraphicsEnvironment;
 
 
-@Mod(modid = NBTEdit.MODID, version = NBTEdit.VERSION,
-		certificateFingerprint = "7e11c175d1e24007afec7498a1616bef0000027d")
+@Mod(NBTEdit.MODID)
 public class NBTEdit {
 	public static final String MODID = "nbtedit";
 	@SuppressWarnings("WeakerAccess")
 	public static final String VERSION = "$version";
-	public static final SimpleNetworkWrapper packetHandler = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
-	@SidedProxy(clientSide = "malte0811.nbtedit.nbt.ClientProxy", serverSide = "malte0811.nbtedit.nbt.CommonProxy")
-	public static CommonProxy proxy;
-	public static final CommonProxy commonProxyInstance = new CommonProxy();
-	public static final CommandNbtEdit editNbt = new CommandNbtEdit();
+	public static final SimpleChannel packetHandler = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, "network"),
+			()->VERSION, s->true, s->true);
+	public static CommonProxy proxy = new CommonProxy();
 	public static Logger logger;
 
-	@Mod.EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		logger = event.getModLog();
+	public NBTEdit() {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::init);
 	}
 
-	@Mod.EventHandler
-	public void init(FMLInitializationEvent event) {
+	public void clientInit(FMLClientSetupEvent event) {
+		proxy = new ClientProxy();
+	}
+
+	public void init(FMLCommonSetupEvent event) {
+		logger = LogManager.getLogger(MODID);
+		//TODO remove this or figure it out
+		System.setProperty("java.awt.headless", "false");
 		int id = 0;
-		packetHandler.registerMessage(MessageNBTSync.ClientHandler.class, MessageNBTSync.class, id++, Side.CLIENT);
-		packetHandler.registerMessage(MessagePushNBT.ServerHandler.class, MessagePushNBT.class, id++, Side.SERVER);
-		packetHandler.registerMessage(MessageRequestNBT.ServerHandler.class, MessageRequestNBT.class, id++, Side.SERVER);
-		packetHandler.registerMessage(MessageBlockUpdate.ClientHandler.class, MessageBlockUpdate.class, id++, Side.CLIENT);
-		if (event.getSide() == Side.CLIENT) {
+		packetHandler.registerMessage(id++, MessageNBTSync.class, MessageNBTSync::toBytes,
+				MessageNBTSync::new, MessageNBTSync::onMessage);
+		packetHandler.registerMessage(id++, MessagePushNBT.class, MessagePushNBT::toBytes,
+				MessagePushNBT::new, MessagePushNBT::onMessage);
+		packetHandler.registerMessage(id++, MessageRequestNBT.class, MessageRequestNBT::toBytes,
+				MessageRequestNBT::new, MessageRequestNBT::onMessage);
+		packetHandler.registerMessage(id++, MessageBlockUpdate.class, MessageBlockUpdate::toBytes,
+				MessageBlockUpdate::new, MessageBlockUpdate::onMessage);
+		if (FMLEnvironment.dist == Dist.CLIENT) {
 			NBTClipboard.readFromDisc();
 			Compat.registerHandlers();
 		}
-		MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
-		proxy.registerClientCommands();
 	}
+/*TODO get this working again!
+	@NetworkCheckHandler
+	@OnlyIn(Dist.CLIENT)
+	public boolean checkModLists(Map<String, String> modList, Side side) {
+
+		logger.info(modList+", "+modList.containsKey(MODID));//TODO disable NBTEdit/Proxy provider if NBTEdit isn't installed on the server
+		return true;
+	}
+	*/
 }

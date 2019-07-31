@@ -1,49 +1,45 @@
 package malte0811.nbtedit.network;
 
-import io.netty.buffer.ByteBuf;
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.nbt.EditPosKey;
 import malte0811.nbtedit.util.Utils;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.PacketBuffer;
 
-public class MessageRequestNBT implements IMessage {
+import java.util.function.Supplier;
+
+public class MessageRequestNBT {
 	private EditPosKey pos;
 
 	public MessageRequestNBT(EditPosKey e) {
 		pos = e;
 	}
 
-	public MessageRequestNBT() {
-	}
-
-	@Override
-	public void fromBytes(ByteBuf buf) {
+	public MessageRequestNBT(PacketBuffer buf) {
 		pos = EditPosKey.fromBytes(buf);
 	}
 
-	@Override
-	public void toBytes(ByteBuf buf) {
+	public void toBytes(PacketBuffer buf) {
 		pos.toBytes(buf);
 	}
 
-	public static class ServerHandler implements IMessageHandler<MessageRequestNBT, IMessage> {
-		@Override
-		public IMessage onMessage(MessageRequestNBT msg, MessageContext ctx) {
-			EntityPlayerMP player = ctx.getServerHandler().player;
-			player.getServerWorld().addScheduledTask(() -> {
-				if (NBTEdit.editNbt.checkPermission(player.mcServer, player)) {
-					NBTTagCompound val = Utils.getNBTForPos(msg.pos);
-					NBTEdit.packetHandler.sendTo(new MessageNBTSync(msg.pos, val), player);
-				} else {
-					NBTEdit.logger.error("Player " + ctx.getServerHandler().player.getDisplayNameString() +
-							" tried to request NBT data from the server but isn't permitted to do so!");
-				}
-			});
-			return null;
+	public void onMessage(Supplier<NetworkEvent.Context> ctx) {
+		ServerPlayerEntity player = ctx.get().getSender();
+		if (player==null) {
+			return;
 		}
+		MinecraftServer server = player.server;
+		ctx.get().enqueueWork(() -> {
+			if (player.hasPermissionLevel(2)) {
+				CompoundNBT val = Utils.getNBTForPos(pos, server);
+				NBTEdit.packetHandler.reply(new MessageNBTSync(pos, val), ctx.get());
+			} else {
+				NBTEdit.logger.error("Player " + player.getName() +
+						" tried to request NBT data from the server but isn't permitted to do so!");
+			}
+		});
 	}
 }

@@ -4,46 +4,38 @@ import io.netty.buffer.ByteBuf;
 import malte0811.nbtedit.NBTEdit;
 import malte0811.nbtedit.nbt.EditPosKey;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.PacketBuffer;
+import java.util.function.Supplier;
 
-public class MessageNBTSync implements IMessage {
+public class MessageNBTSync {
 	private EditPosKey pos;
-	private NBTTagCompound value;
+	private CompoundNBT value;
 
-	public MessageNBTSync(EditPosKey k, NBTTagCompound val) {
+	public MessageNBTSync(EditPosKey k, CompoundNBT val) {
 		pos = k;
 		value = val;
 	}
 
-	public MessageNBTSync() {
-	}
-
-	@Override
-	public void fromBytes(ByteBuf buf) {
+	public MessageNBTSync(PacketBuffer buf) {
 		pos = EditPosKey.fromBytes(buf);
 		if (buf.readBoolean()) {
-			value = ByteBufUtils.readTag(buf);
+			value = buf.readCompoundTag();
 		}
 	}
 
-	@Override
-	public void toBytes(ByteBuf buf) {
+	public void toBytes(PacketBuffer buf) {
 		pos.toBytes(buf);
 		buf.writeBoolean(value != null);
 		if (value != null) {
-			ByteBufUtils.writeTag(buf, value);
+			buf.writeCompoundTag(value);
 		}
 	}
 
-	public static class ClientHandler implements IMessageHandler<MessageNBTSync, IMessage> {
-		@Override
-		public IMessage onMessage(MessageNBTSync msg, MessageContext ctx) {
-			Minecraft.getMinecraft().addScheduledTask(() -> NBTEdit.proxy.cache(msg.pos, msg.value));
-			return null;
-		}
+	//TODO figure out side safety for the new system!
+	public void onMessage(Supplier<NetworkEvent.Context> ctx) {
+		ctx.get().enqueueWork(() -> NBTEdit.proxy.cache(pos, value));
 	}
 }

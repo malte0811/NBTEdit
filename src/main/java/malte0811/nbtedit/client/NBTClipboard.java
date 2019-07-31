@@ -3,8 +3,8 @@ package malte0811.nbtedit.client;
 import com.google.common.collect.ImmutableMap;
 import malte0811.nbtedit.nbt.NBTUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,9 +15,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NBTClipboard {
-	private static final Map<String, NBTBase> copied = new ConcurrentHashMap<>();
+	private static final Map<String, INBT> copied = new ConcurrentHashMap<>();
 
-	public static void saveToClipboard(NBTBase val, String name) {
+	public static void saveToClipboard(INBT val, String name) {
 		copied.put(name, val.copy());
 		saveToDisc();
 	}
@@ -26,20 +26,20 @@ public class NBTClipboard {
 		copied.remove(keyToDelete);
 	}
 
-	public static Map<String, NBTBase> getContent() {
+	public static Map<String, INBT> getContent() {
 		return ImmutableMap.copyOf(copied);
 	}
 
-	public static NBTBase get(String key) {
+	public static INBT get(String key) {
 		return copied.get(key);
 	}
 
 	private static void saveToDisc() {
-		NBTTagCompound toWrite = new NBTTagCompound();
-		for (Entry<String, NBTBase> b : copied.entrySet()) {
-			toWrite.setTag(b.getKey(), b.getValue());
+		CompoundNBT toWrite = new CompoundNBT();
+		for (Entry<String, INBT> b : copied.entrySet()) {
+			toWrite.put(b.getKey(), b.getValue());
 		}
-		File out = new File(Minecraft.getMinecraft().mcDataDir, "NBTEdit.nbt");
+		File out = new File(Minecraft.getInstance().gameDir, "NBTEdit.nbt");
 		try {
 			out.createNewFile();
 			NBTUtils.writeNBT(toWrite, new FileOutputStream(out));
@@ -49,12 +49,12 @@ public class NBTClipboard {
 	}
 
 	public static void readFromDisc() {
-		File in = new File(Minecraft.getMinecraft().mcDataDir, "NBTEdit.nbt");
+		File in = new File(Minecraft.getInstance().gameDir, "NBTEdit.nbt");
 		if (in.exists()) {
 			try {
-				NBTTagCompound nbt = NBTUtils.readNBT(new FileInputStream(in));
-				for (String k : nbt.getKeySet()) {
-					copied.put(k, nbt.getTag(k));
+				CompoundNBT nbt = NBTUtils.readNBT(new FileInputStream(in));
+				for (String k : nbt.keySet()) {
+					copied.put(k, nbt.get(k));
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

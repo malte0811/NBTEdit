@@ -12,7 +12,7 @@ apply plugin: 'net.minecraftforge.gradle'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 
-version = '0.8'
+version = '0.8.1'
 group = 'malte0811.nbtedit' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'NBTEdit'
 
@@ -44,7 +44,7 @@ repositories {
 
 dependencies {
     compileOnly "blusunrize:ImmersiveEngineering:0.12-+"
-    minecraft 'net.minecraftforge:forge:1.14.4-28.0.27'
+    minecraft 'net.minecraftforge:forge:1.14.4-28.0.55'
 }
 
 processResources {

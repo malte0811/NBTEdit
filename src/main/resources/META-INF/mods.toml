@@ -1,0 +1,11 @@
+modLoader="javafml"
+loaderVersion="[14,)"
+issueTrackerURL="https://github.com/malte0811/NBTEdit/issues"
+displayURL="https://github.com/malte0811/NBTEdit"
+credits="DavidGoldman for the MC 1.7.10-equivalent of this mod"
+authors="malte0811"
+[[mods]]
+modId="nbtedit"
+version="0.8.1"
+displayName="NBTEdit"
+description="In-game NBT editing for items, entities and TileEntities"

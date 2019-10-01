@@ -8,6 +8,7 @@ import malte0811.nbtedit.network.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -34,11 +35,11 @@ public class NBTEdit {
 	public NBTEdit() {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::init);
+		DistExecutor.callWhenOn(Dist.CLIENT, ()->()->System.setProperty("java.awt.headless", "false"));
 	}
 
 	public void clientInit(FMLClientSetupEvent event) {
 		proxy = new ClientProxy();
-		System.setProperty("java.awt.headless", "false");
 	}
 
 	public void init(FMLCommonSetupEvent event) {

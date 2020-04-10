@@ -21,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-@Mod(NBTEdit.MODID)
+@Mod(modid = NBTEdit.MODID, version = NBTEdit.VERSION, acceptableRemoteVersions = "*")
 @Mod.EventBusSubscriber
 public class NBTEdit {
 	public static final String MODID = "nbtedit";

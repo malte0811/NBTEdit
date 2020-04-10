@@ -20,7 +20,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.Logger;
 
 
-@Mod(modid = NBTEdit.MODID, version = NBTEdit.VERSION,
+@Mod(modid = NBTEdit.MODID, version = NBTEdit.VERSION, acceptableRemoteVersions = "*",
 		certificateFingerprint = "7e11c175d1e24007afec7498a1616bef0000027d")
 public class NBTEdit {
 	public static final String MODID = "nbtedit";

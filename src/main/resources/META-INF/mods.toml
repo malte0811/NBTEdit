@@ -6,6 +6,6 @@ credits="DavidGoldman for the MC 1.7.10-equivalent of this mod"
 authors="malte0811"
 [[mods]]
 modId="nbtedit"
-version="0.8.1"
+version="0.9.0"
 displayName="NBTEdit"
 description="In-game NBT editing for items, entities and TileEntities"

@@ -15,13 +15,13 @@ import java.awt.*;
 
 class NBTTreeCellRenderer extends DefaultTreeCellRenderer {
 
-	private static final Icon[] nbtIcons = new Icon[INBT.NBT_TYPES.length];
+	private static final Icon[] nbtIcons = new Icon[NBTUtils.NBT_TYPES.length];
 
 	static {
 		for (int i = 1; i < nbtIcons.length; i++) {
 			try {
 				IResource r = Minecraft.getInstance().getResourceManager().getResource(new ResourceLocation(NBTEdit.MODID, "icons/"
-					+ INBT.NBT_TYPES[i].toLowerCase().replace("[]", "_array") + ".png"));
+					+ NBTUtils.NBT_TYPES[i].toLowerCase().replace("[]", "_array") + ".png"));
 				byte[] imageData = org.apache.commons.io.IOUtils.toByteArray(r.getInputStream());
 				nbtIcons[i] = new ImageIcon(imageData);
 			} catch (Exception x) {

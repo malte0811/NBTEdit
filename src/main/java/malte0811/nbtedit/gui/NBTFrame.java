@@ -212,7 +212,7 @@ public class NBTFrame extends JFrame {
 	}
 
 	private MutableTreeNode getNodeForBase(INBT nbt, String key) {
-		String type = INBT.NBT_TYPES[nbt.getId()];
+		String type = NBTUtils.NBT_TYPES[nbt.getId()];
 		switch (type) {
 			case "COMPOUND":
 				MutableTreeNode sub = genTreeFromNbt((CompoundNBT) nbt);
@@ -486,14 +486,14 @@ public class NBTFrame extends JFrame {
 			m.addActionListener((a) ->
 				writeTag((CompoundNBT) nbt));
 			ret.addSeparator();
-			for (int i = 1; i < INBT.NBT_TYPES.length; i++) {
+			for (int i = 1; i < NBTUtils.NBT_TYPES.length; i++) {
 				addAddOption(ret, i, nbt);
 			}
 		} else if (nbt instanceof ListNBT) {
 			ret.addSeparator();
 			int type = ((ListNBT) nbt).getTagType();
 			if (type == 0) {
-				for (int i = 1; i < INBT.NBT_TYPES.length; i++) {
+				for (int i = 1; i < NBTUtils.NBT_TYPES.length; i++) {
 					addAddOption(ret, i, nbt);
 				}
 			} else {
@@ -521,32 +521,32 @@ public class NBTFrame extends JFrame {
 			case NBT.TAG_BYTE:
 				m = ret.add("Add byte");
 				m.addActionListener((a) ->
-					set.accept(new ByteNBT((byte) 0)));
+					set.accept(ByteNBT.valueOf((byte) 0)));
 				break;
 			case NBT.TAG_SHORT:
 				m = ret.add("Add short");
 				m.addActionListener((a) ->
-					set.accept(new ShortNBT()));
+					set.accept(ShortNBT.valueOf((short) 0)));
 				break;
 			case NBT.TAG_INT:
 				m = ret.add("Add int");
 				m.addActionListener((a) ->
-					set.accept(new IntNBT(0)));
+					set.accept(IntNBT.valueOf(0)));
 				break;
 			case NBT.TAG_LONG:
 				m = ret.add("Add long");
 				m.addActionListener((a) ->
-					set.accept(new LongNBT(0)));
+					set.accept(LongNBT.valueOf(0)));
 				break;
 			case NBT.TAG_FLOAT:
 				m = ret.add("Add float");
 				m.addActionListener((a) ->
-					set.accept(new FloatNBT(0)));
+					set.accept(FloatNBT.valueOf(0)));
 				break;
 			case NBT.TAG_DOUBLE:
 				m = ret.add("Add double");
 				m.addActionListener((a) ->
-					set.accept(new DoubleNBT(0)));
+					set.accept(DoubleNBT.valueOf(0)));
 				break;
 			case NBT.TAG_BYTE_ARRAY:
 				m = ret.add("Add byte[]");
@@ -556,7 +556,7 @@ public class NBTFrame extends JFrame {
 			case NBT.TAG_STRING:
 				m = ret.add("Add String");
 				m.addActionListener((a) ->
-					set.accept(new StringNBT("")));
+					set.accept(StringNBT.valueOf("")));
 				break;
 			case NBT.TAG_LIST:
 				m = ret.add("Add ListNBT");

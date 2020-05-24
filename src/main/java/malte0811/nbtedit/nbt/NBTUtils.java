@@ -19,6 +19,16 @@ import java.util.List;
 import java.util.function.Function;
 
 public class NBTUtils {
+	public static final String[] NBT_TYPES;
+	static {
+		List<String> types = new ArrayList<>();
+		String current;
+		final String invalidTypeName = "INVALID[";
+		for (int i = 0;!(current = NBTTypes.func_229710_a_(i).func_225648_a_()).contains(invalidTypeName);++i)
+			types.add(current);
+		NBT_TYPES = types.toArray(new String[0]);
+	}
+
 	public static String nbtToString(INBT nbt) {
 		String ret = null;
 		switch (nbt.getId()) {
@@ -69,28 +79,28 @@ public class NBTUtils {
 				case NBT.TAG_LIST:
 					break;
 				case NBT.TAG_BYTE:
-					ret = new ByteNBT(Byte.parseByte(in));
+					ret = ByteNBT.valueOf(Byte.parseByte(in));
 					break;
 				case NBT.TAG_SHORT:
-					ret = new ShortNBT(Short.parseShort(in));
+					ret = ShortNBT.valueOf(Short.parseShort(in));
 					break;
 				case NBT.TAG_INT:
-					ret = new IntNBT(Integer.parseInt(in));
+					ret = IntNBT.valueOf(Integer.parseInt(in));
 					break;
 				case NBT.TAG_LONG:
-					ret = new LongNBT(Long.parseLong(in));
+					ret = LongNBT.valueOf(Long.parseLong(in));
 					break;
 				case NBT.TAG_FLOAT:
-					ret = new FloatNBT(Float.parseFloat(in));
+					ret = FloatNBT.valueOf(Float.parseFloat(in));
 					break;
 				case NBT.TAG_DOUBLE:
-					ret = new DoubleNBT(Double.parseDouble(in));
+					ret = DoubleNBT.valueOf(Double.parseDouble(in));
 					break;
 				case NBT.TAG_BYTE_ARRAY:
 					ret = new ByteArrayNBT(stringToArray(in, Byte::parseByte));
 					break;
 				case NBT.TAG_STRING:
-					ret = new StringNBT(in);
+					ret = StringNBT.valueOf(in);
 					break;
 				case NBT.TAG_INT_ARRAY:
 					ret = new IntArrayNBT(stringToArray(in, Integer::parseInt));

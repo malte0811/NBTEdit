@@ -24,7 +24,7 @@ public class NBTUtils {
 		List<String> types = new ArrayList<>();
 		String current;
 		final String invalidTypeName = "INVALID[";
-		for (int i = 0;!(current = NBTTypes.func_229710_a_(i).func_225648_a_()).contains(invalidTypeName);++i)
+		for (int i = 0;!(current = NBTTypes.getGetTypeByID(i).getName()).contains(invalidTypeName);++i)
 			types.add(current);
 		NBT_TYPES = types.toArray(new String[0]);
 	}

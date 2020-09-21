@@ -6,6 +6,8 @@ import malte0811.nbtedit.network.MessageRequestNBT;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.EventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import javax.annotation.Nonnull;
@@ -21,7 +23,7 @@ public class ClientProxy extends CommonProxy {
 	private final Map<EditPosKey, Consumer<CompoundNBT>> WAITING = new HashMap<>();
 
 	public ClientProxy() {
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(VanillaNBTProvider::clientChatEvent);
+		MinecraftForge.EVENT_BUS.addListener(VanillaNBTProvider::clientChatEvent);
 	}
 
 	@Override

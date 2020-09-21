@@ -12,14 +12,14 @@ apply plugin: 'net.minecraftforge.gradle'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 
-version = '0.9.0'
+version = '0.10.0'
 group = 'malte0811.nbtedit' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'NBTEdit'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200524-1.15.1'
+    mappings channel: 'snapshot', version: '20200916-1.16.2'
     runs {
         client = {
             workingDirectory project.file('run').canonicalPath
@@ -34,7 +34,7 @@ minecraft {
 repositories {
     maven {
         name 'jared maven'
-        url 'http://blamejared.com/maven'
+        url 'http://maven.blamejared.com'
     }
     maven {
         name 'forge maven'
@@ -43,8 +43,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "blusunrize:ImmersiveEngineering:0.12-+"
-    minecraft 'net.minecraftforge:forge:1.15.2-31.2.4'
+    compile fg.deobf("blusunrize.immersiveengineering:ImmersiveEngineering:1.16.3-4.0.1-121")
+    minecraft 'net.minecraftforge:forge:1.16.3-34.0.9'
 }
 
 processResources {

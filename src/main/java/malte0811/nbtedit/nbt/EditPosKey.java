@@ -4,7 +4,12 @@ import io.netty.buffer.ByteBuf;
 import malte0811.nbtedit.api.ObjectType;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Hand;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.DimensionType;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import javax.annotation.Nonnull;
@@ -16,7 +21,7 @@ public class EditPosKey {
 	@Nonnull
 	public final ObjectType type;
 	//entity+TE
-	public final int dim;
+	public final RegistryKey<World> dim;
 	//entity
 	@Nonnull
 	public final UUID entity;
@@ -29,7 +34,7 @@ public class EditPosKey {
 
 	private static final Hand[] HANDS = Hand.values();
 
-	public EditPosKey(@Nonnull UUID p, int dim, @Nonnull UUID eId) {
+	public EditPosKey(@Nonnull UUID p, RegistryKey<World> dim, @Nonnull UUID eId) {
 		player = p;
 		entity = eId;
 		this.dim = dim;
@@ -38,7 +43,7 @@ public class EditPosKey {
 		hand = Hand.MAIN_HAND;
 	}
 
-	public EditPosKey(@Nonnull UUID player, int dim) {
+	public EditPosKey(@Nonnull UUID player, RegistryKey<World> dim) {
 		this.player = player;
 		entity = player;
 		this.dim = dim;
@@ -47,7 +52,7 @@ public class EditPosKey {
 		hand = Hand.MAIN_HAND;
 	}
 
-	public EditPosKey(@Nonnull UUID p, int dim, @Nonnull BlockPos pos) {
+	public EditPosKey(@Nonnull UUID p, RegistryKey<World> dim, @Nonnull BlockPos pos) {
 		player = p;
 		tilePos = pos;
 		this.dim = dim;
@@ -59,7 +64,7 @@ public class EditPosKey {
 	public EditPosKey(@Nonnull UUID p, @Nonnull Hand h) {
 		player = p;
 		tilePos = BlockPos.ZERO;
-		dim = 0;
+		dim = World.OVERWORLD;
 		entity = UUID.fromString("00000000-0000-0000-0000-000000000000");
 		type = ObjectType.HAND;
 		hand = h;
@@ -67,17 +72,18 @@ public class EditPosKey {
 
 	public static EditPosKey fromBytes(PacketBuffer pBuf) {
 		UUID user = UUID.fromString(pBuf.readString(36));
-		int d = pBuf.readInt();
-		byte t = pBuf.readByte();
-		ObjectType type = ObjectType.VALUES[t];
+		ResourceLocation dimensionName = new ResourceLocation(pBuf.readString(512));
+		RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, dimensionName);
+		byte typeId = pBuf.readByte();
+		ObjectType type = ObjectType.VALUES[typeId];
 		switch (type) {
 			case ENTITY:
 			case PLAYER:
 				UUID e = pBuf.readUniqueId();
-				return new EditPosKey(user, d, e);
+				return new EditPosKey(user, dimension, e);
 			case TILEENTITY:
 				BlockPos pos = pBuf.readBlockPos();
-				return new EditPosKey(user, d, pos);
+				return new EditPosKey(user, dimension, pos);
 			case HAND:
 				byte h = pBuf.readByte();
 				return new EditPosKey(user, HANDS[h]);
@@ -87,7 +93,7 @@ public class EditPosKey {
 
 	public void toBytes(PacketBuffer pBuf) {
 		pBuf.writeString(player.toString());
-		pBuf.writeInt(dim);
+		pBuf.writeString(dim.getLocation().toString());
 		pBuf.writeByte(type.ordinal());
 		switch (type) {
 			case ENTITY:
@@ -107,7 +113,7 @@ public class EditPosKey {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + dim;
+		result = prime * result + dim.hashCode();
 		result = prime * result + type.ordinal();
 		result = prime * result + entity.hashCode();
 		result = prime * result + player.hashCode();

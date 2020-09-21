@@ -4,6 +4,7 @@ issueTrackerURL="https://github.com/malte0811/NBTEdit/issues"
 displayURL="https://github.com/malte0811/NBTEdit"
 credits="DavidGoldman for the MC 1.7.10-equivalent of this mod"
 authors="malte0811"
+license="MIT"
 [[mods]]
 modId="nbtedit"
 version="0.9.0"

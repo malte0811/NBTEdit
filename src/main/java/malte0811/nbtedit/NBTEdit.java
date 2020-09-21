@@ -7,9 +7,11 @@ import malte0811.nbtedit.nbt.CommonProxy;
 import malte0811.nbtedit.network.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
@@ -22,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 
 @Mod(NBTEdit.MODID)
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(bus = Bus.FORGE)
 public class NBTEdit {
 	public static final String MODID = "nbtedit";
 	@SuppressWarnings("WeakerAccess")
@@ -63,7 +65,7 @@ public class NBTEdit {
 	}
 
 	@SubscribeEvent
-	public static void serverStarted(FMLServerStartingEvent ev) {
-		CommandNbtEdit.register(ev.getCommandDispatcher());
+	public static void serverStarted(RegisterCommandsEvent ev) {
+		CommandNbtEdit.register(ev.getDispatcher());
 	}
 }

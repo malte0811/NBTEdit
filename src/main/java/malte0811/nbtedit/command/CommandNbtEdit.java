@@ -20,22 +20,23 @@ import malte0811.nbtedit.network.MessageOpenWindow;
 import malte0811.nbtedit.util.Utils;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.ArgumentSerializer;
-import net.minecraft.command.arguments.ArgumentTypes;
-import net.minecraft.command.arguments.BlockPosArgument;
-import net.minecraft.command.arguments.IArgumentSerializer;
+import net.minecraft.command.arguments.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Hand;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Collection;
@@ -55,10 +56,14 @@ public class CommandNbtEdit {
 				.executes(
 					data -> editPos(data.getSource(), BlockPosArgument.getLoadedBlockPos(data, "pos"))
 				)
-				.then(Commands.argument("dim", IntegerArgumentType.integer())
+				.then(Commands.argument("dim", ResourceLocationArgument.resourceLocation())
 					.executes(
-						data -> editPos(data.getSource(), BlockPosArgument.getLoadedBlockPos(data, "pos"),
-							IntegerArgumentType.getInteger(data, "dim"))
+						data -> {
+							ResourceLocation dimensionName = ResourceLocationArgument.getResourceLocation(data, "dim");
+							RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, dimensionName);
+							return editPos(data.getSource(), BlockPosArgument.getLoadedBlockPos(data, "pos"),
+									dimension);
+						}
 					)
 				)
 			)
@@ -110,16 +115,16 @@ public class CommandNbtEdit {
 	}
 
 	public static int editPos(CommandSource src, BlockPos pos) throws CommandSyntaxException {
-		return editPos(src, pos, src.asPlayer().world.dimension.getType().getId());
+		return editPos(src, pos, src.asPlayer().world.getDimensionKey());
 	}
 
-	public static int editPos(CommandSource src, BlockPos pos, int dim) throws CommandSyntaxException {
+	public static int editPos(CommandSource src, BlockPos pos, RegistryKey<World> dim) throws CommandSyntaxException {
 		ServerPlayerEntity player = src.asPlayer();
 		openEditWindow(player, keyFromPos(pos, player, dim));
 		return 0;
 	}
 
-	private static EditPosKey keyFromPos(BlockPos p, PlayerEntity player, int dimension) throws CommandSyntaxException {
+	private static EditPosKey keyFromPos(BlockPos p, PlayerEntity player, RegistryKey<World> dimension) throws CommandSyntaxException {
 		if (player.world.getTileEntity(p) == null)
 			throw new CommandSyntaxException(NO_TILE_TYPE,
 				new TranslationTextComponent("nbtedit.no_te", p.getX(), p.getY(), p.getZ()));
@@ -128,7 +133,7 @@ public class CommandNbtEdit {
 
 	private static int editEntity(CommandSource src, Entity e) throws CommandSyntaxException {
 		ServerPlayerEntity player = src.asPlayer();
-		EditPosKey pos = new EditPosKey(player.getUniqueID(), e.world.dimension.getType().getId(), e.getUniqueID());
+		EditPosKey pos = new EditPosKey(player.getUniqueID(), e.world.getDimensionKey(), e.getUniqueID());
 		openEditWindow(player, pos);
 		return 0;
 	}

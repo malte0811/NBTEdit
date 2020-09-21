@@ -17,9 +17,9 @@ public class API {
 	}
 
 	private static final Map<EntityType<?>, IEditHandler> entityHandlers = new ConcurrentHashMap<>();
-	private static final Map<TileEntityType<?>, IEditHandler> tileHandlers = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends TileEntity>, IEditHandler> tileHandlers = new ConcurrentHashMap<>();
 
-	public static void registerTileHandler(TileEntityType<?> c, IEditHandler e) {
+	public static void registerTileHandler(Class<? extends TileEntity> c, IEditHandler e) {
 		if (!tileHandlers.containsKey(c)) {
 			tileHandlers.put(c, e);
 		} else {
@@ -44,10 +44,20 @@ public class API {
 	}
 
 	public static IEditHandler getTileHandler(String s) {
-		TileEntityType d = ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(s));
-		if (d == null)
+		TileEntityType<?> d = ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(s));
+		if (d == null) {
 			return null;
-		return tileHandlers.get(d);
+		}
+		Class<?> clazz = d.create().getClass();
+		IEditHandler forClass = null;
+		while (TileEntity.class.isAssignableFrom(clazz) && forClass == null)
+		{
+			forClass = tileHandlers.get(clazz);
+			if (forClass == null) {
+				clazz = clazz.getSuperclass();
+			}
+		}
+		return forClass;
 	}
 
 	public static IEditHandler get(CompoundNBT nbt) {

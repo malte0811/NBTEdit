@@ -13,9 +13,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.RayTraceResult.Type;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
@@ -28,17 +27,17 @@ import java.util.Optional;
 public final class Utils {
 	public static RayTraceResult rayTrace(Entity entity) {
 		double d0 = 10;
-		Vec3d eyePos = entity.getPositionVector().add(0, entity.getEyeHeight(), 0);
-		Vec3d Vec3d1 = entity.getLook(1);
-		Vec3d Vec3d2 = eyePos.add(Vec3d1.x * d0, Vec3d1.y * d0, Vec3d1.z * d0);
-		RayTraceResult block = entity.world.rayTraceBlocks(new RayTraceContext(eyePos, Vec3d2, RayTraceContext.BlockMode.OUTLINE,
+		Vector3d eyePos = entity.getPositionVec().add(0, entity.getEyeHeight(), 0);
+		Vector3d Vector3d1 = entity.getLook(1);
+		Vector3d Vector3d2 = eyePos.add(Vector3d1.x * d0, Vector3d1.y * d0, Vector3d1.z * d0);
+		RayTraceResult block = entity.world.rayTraceBlocks(new RayTraceContext(eyePos, Vector3d2, RayTraceContext.BlockMode.OUTLINE,
 			RayTraceContext.FluidMode.NONE, entity));
 		double d1 = block.getType() == Type.BLOCK ? block.getHitVec().distanceTo(eyePos)
 			: Double.MAX_VALUE;
-		Vec3d lookVec = entity.getLook(1);
-		Vec3d maxRay = eyePos.add(lookVec.x * d0, lookVec.y * d0, lookVec.z * d0);
+		Vector3d lookVec = entity.getLook(1);
+		Vector3d maxRay = eyePos.add(lookVec.x * d0, lookVec.y * d0, lookVec.z * d0);
 		Entity pointedEntity = null;
-		Vec3d target = null;
+		Vector3d target = null;
 		float f = 1.0F;
 		List<Entity> list = entity.world.getEntitiesInAABBexcluding(entity,
 			entity.getBoundingBox().expand(lookVec.x * d0, lookVec.y * d0, lookVec.z * d0)
@@ -49,7 +48,7 @@ public final class Utils {
 		for (Entity e : list) {
 			float f1 = e.getCollisionBorderSize();
 			AxisAlignedBB axisalignedbb = e.getBoundingBox().grow((double) f1);
-			Optional<Vec3d> hit = axisalignedbb.rayTrace(eyePos, maxRay);
+			Optional<Vector3d> hit = axisalignedbb.rayTrace(eyePos, maxRay);
 
 			if (axisalignedbb.contains(eyePos)) {
 				if (d2 >= 0.0D) {
@@ -58,7 +57,7 @@ public final class Utils {
 					d2 = 0.0D;
 				}
 			} else if (hit.isPresent()) {
-				Vec3d hitVec = hit.get();
+				Vector3d hitVec = hit.get();
 				double d3 = eyePos.distanceTo(hitVec);
 
 				if (d3 < d2 || d2 == 0.0D) {
@@ -84,8 +83,8 @@ public final class Utils {
 	}
 
 	public static CompoundNBT getNBTForPos(EditPosKey k, MinecraftServer server) {
-		ServerWorld world = DimensionManager.getWorld(server, Objects.requireNonNull(DimensionType.getById(k.dim)),
-			false, false);
+
+		ServerWorld world = server.getWorld(k.dim);
 		if (world == null) {
 			return null;
 		}
@@ -117,8 +116,7 @@ public final class Utils {
 	}
 
 	public static void setNBTAtPos(EditPosKey k, CompoundNBT newNbt, MinecraftServer server) {
-		ServerWorld world = DimensionManager.getWorld(server, Objects.requireNonNull(DimensionType.getById(k.dim)),
-			false, false);
+		ServerWorld world = server.getWorld(k.dim);
 		if (world != null) {
 			switch (k.type) {
 				case ENTITY:
@@ -131,7 +129,7 @@ public final class Utils {
 					TileEntity te = world.getTileEntity(k.tilePos);
 					if (te != null) {
 						BlockState state = world.getBlockState(k.tilePos);
-						te.read(newNbt);
+						te.read(state, newNbt);
 						te.markDirty();
 						BlockState newState = world.getBlockState(k.tilePos);
 						world.notifyBlockUpdate(k.tilePos, state, state, 3);

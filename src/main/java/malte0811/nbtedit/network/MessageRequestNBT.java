@@ -37,7 +37,7 @@ public class MessageRequestNBT {
 				CompoundNBT val = Utils.getNBTForPos(pos, server);
 				NBTEdit.packetHandler.reply(new MessageNBTSync(pos, val), ctx.get());
 			} else {
-				NBTEdit.logger.error("Player " + player.getName() +
+				NBTEdit.logger.error("Player " + player.getName().getUnformattedComponentText() +
 					" tried to request NBT data from the server but isn't permitted to do so!");
 			}
 		});

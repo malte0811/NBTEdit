@@ -37,7 +37,7 @@ public class MessagePushNBT {
 				if (player.hasPermissionLevel(2)) {
 					Utils.setNBTAtPos(pos, value, player.server);
 				} else {
-					NBTEdit.logger.error("Player " + player.getName() +
+					NBTEdit.logger.error("Player " + player.getName().getUnformattedComponentText() +
 						" tried to push NBT data to the server but isn't permitted to do so!");
 				}
 			});

@@ -8,7 +8,7 @@ import malte0811.nbtedit.client.NBTClipboard;
 import malte0811.nbtedit.nbt.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.util.Hand;
 import net.minecraftforge.common.util.Constants.NBT;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -29,7 +29,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class NBTFrame extends JFrame {
@@ -46,9 +45,10 @@ public class NBTFrame extends JFrame {
 	private JMenuBar bar;
 	//TODO choosing from GUI
 	private INBTEditingProvider provider = NBTEdit.proxy;//new VanillaNBTProvider();//
+	private static final String defaultTitle = "NBTEdit";
 
 	public NBTFrame(EditPosKey pos) {
-		super("NBTEdit");
+		super(defaultTitle);
 		editPos = pos;
 		add(panel);
 		initGUI();
@@ -59,6 +59,7 @@ public class NBTFrame extends JFrame {
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		addWindowListener(new CloseListener());
 		setSize(500, 500);
+		setTitle(buildTitle());
 		setVisible(true);
 	}
 
@@ -68,6 +69,35 @@ public class NBTFrame extends JFrame {
 			lastSynced = nbtRoot != null ? nbtRoot.copy() : null;
 			SwingUtilities.invokeLater(this::updateNbt);
 		});
+	}
+
+	private String buildTitle() {
+		if (editPos == null)
+			return defaultTitle;
+		StringBuilder builder = new StringBuilder(defaultTitle);
+		builder.append(" - ");
+		switch (editPos.type){
+			case PLAYER:
+				builder.append("Player ").append(editPos.entity);
+				break;
+			case HAND:
+				builder.append("Hand Item (")
+						.append(editPos.hand == Hand.MAIN_HAND ? "Main" : "Off")
+						.append(")");
+				break;
+			case ENTITY:
+				builder.append("Entity ").append(editPos.entity);
+				break;
+			case TILEENTITY:
+				builder.append("TileEntity at ")
+						.append(editPos.tilePos.getX())
+						.append("/")
+						.append(editPos.tilePos.getY())
+						.append("/")
+						.append(editPos.tilePos.getZ());
+				break;
+		}
+		return builder.toString();
 	}
 
 	private void initGUI() {

@@ -91,6 +91,7 @@ public class VanillaNBTProvider implements INBTEditingProvider {
 				Minecraft.getInstance().player.sendChatMessage("/data get block " + k.tilePos.getX() + " " + k.tilePos.getY() + " "
 					+ k.tilePos.getZ());
 				break;
+			case PLAYER:
 			case ENTITY:
 				Minecraft.getInstance().player.sendChatMessage("/data get entity " + k.entity);
 				break;

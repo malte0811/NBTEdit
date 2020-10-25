@@ -5,6 +5,7 @@ import malte0811.nbtedit.nbt.EditPosKey;
 import malte0811.nbtedit.network.MessageBlockUpdate;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -18,9 +19,7 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
-import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -83,12 +82,25 @@ public final class Utils {
 	}
 
 	public static CompoundNBT getNBTForPos(EditPosKey k, MinecraftServer server) {
-
 		ServerWorld world = server.getWorld(k.dim);
 		if (world == null) {
 			return null;
 		}
 		switch (k.type) {
+			case PLAYER:
+				Entity ent = world.getEntityByUuid(k.entity);
+				if (ent != null && !ent.removed) {
+					String entityString = EntityType.getKey(ent.getType()).toString(); //minecraft:player
+					if (entityString != null) {
+						CompoundNBT ret = new CompoundNBT();
+						//manually write data (like writeUnlessRemoved(...)), because serialization check
+						//returns false for players -> so no nbt data is returned when treating as entity
+						ret.putString("id", entityString);
+						ent.writeWithoutTypeId(ret);
+						return ret;
+					}
+				}
+				break;
 			case ENTITY:
 				Entity e = world.getEntityByUuid(k.entity);
 				if (e != null) {
@@ -119,6 +131,7 @@ public final class Utils {
 		ServerWorld world = server.getWorld(k.dim);
 		if (world != null) {
 			switch (k.type) {
+				case PLAYER:
 				case ENTITY:
 					Entity e = world.getEntityByUuid(k.entity);
 					if (e != null) {

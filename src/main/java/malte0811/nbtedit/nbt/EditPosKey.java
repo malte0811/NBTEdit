@@ -52,6 +52,15 @@ public class EditPosKey {
 		hand = Hand.MAIN_HAND;
 	}
 
+	public EditPosKey(@Nonnull UUID player, @Nonnull UUID target) {
+		this.player = player; //command sender
+		entity = target; //target player
+		this.dim = World.OVERWORLD;
+		tilePos = BlockPos.ZERO;
+		type = ObjectType.PLAYER;
+		hand = Hand.MAIN_HAND;
+	}
+
 	public EditPosKey(@Nonnull UUID p, RegistryKey<World> dim, @Nonnull BlockPos pos) {
 		player = p;
 		tilePos = pos;
@@ -77,8 +86,10 @@ public class EditPosKey {
 		byte typeId = pBuf.readByte();
 		ObjectType type = ObjectType.VALUES[typeId];
 		switch (type) {
-			case ENTITY:
 			case PLAYER:
+				UUID p = pBuf.readUniqueId();
+				return new EditPosKey(user, p);
+			case ENTITY:
 				UUID e = pBuf.readUniqueId();
 				return new EditPosKey(user, dimension, e);
 			case TILEENTITY:
@@ -96,6 +107,7 @@ public class EditPosKey {
 		pBuf.writeString(dim.getLocation().toString());
 		pBuf.writeByte(type.ordinal());
 		switch (type) {
+			case PLAYER:
 			case ENTITY:
 				//entity
 				pBuf.writeUniqueId(entity);

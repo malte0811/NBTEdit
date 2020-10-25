@@ -72,12 +72,27 @@ public class CommandNbtEdit {
 				.then(Commands.argument("hand", new HandArgument())
 					.executes(data -> editHand(data.getSource(), data.getArgument("hand", Hand.class))))
 			)
+			.then(Commands.literal("player")
+				.then(Commands.literal("me")
+					.executes(data -> editPlayer(data.getSource())))
+				.then(Commands.argument("target", EntityArgument.player())
+					.executes(data -> editPlayer(data.getSource(), EntityArgument.getPlayer(data, "target")))))
 		);
 	}
 
 	public static void registerSerializers() {
 		ArgumentTypes.register(NBTEdit.MODID + ":hand", HandArgument.class,
 			new ArgumentSerializer<>(HandArgument::new));
+	}
+
+	private static int editPlayer(CommandSource source) throws CommandSyntaxException {
+		return editPlayer(source, source.asPlayer());
+	}
+
+	private static int editPlayer(CommandSource source, ServerPlayerEntity player) throws CommandSyntaxException {
+		ServerPlayerEntity playerSource = source.asPlayer();
+		openEditWindow(playerSource, new EditPosKey(playerSource.getUniqueID(), player.getUniqueID()));
+		return 0;
 	}
 
 	private static int editHand(CommandSource source, Hand hand) throws CommandSyntaxException {
@@ -97,14 +112,14 @@ public class CommandNbtEdit {
 	);
 
 	public static int editRaytrace(CommandSource src) throws CommandSyntaxException {
-		PlayerEntity player = src.asPlayer();
+		ServerPlayerEntity player = src.asPlayer();
 		RayTraceResult mop = Utils.rayTrace(player);
 		if (mop != null && mop.getType() == Type.BLOCK) {
 			BlockPos bPos = ((BlockRayTraceResult) mop).getPos();
 			return editPos(src, bPos);
 		} else if (mop != null && mop.getType() == Type.ENTITY) {
 			Entity e = ((EntityRayTraceResult) mop).getEntity();
-			return editEntity(src, e);
+			return e instanceof ServerPlayerEntity ? editPlayer(src, (ServerPlayerEntity) e) : editEntity(src, e);
 		} else {
 			throw new CommandSyntaxException(NO_OBJECT_TYPE, NO_OBJECT_MSG);
 		}
